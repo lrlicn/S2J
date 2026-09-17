@@ -1,0 +1,64 @@
+{/* 文章管理视图（默认隐藏，由 router 控制显隐）。列表项由 posts.js 动态渲染并事件委托 */}
+<div id="admin-management" class="hidden">
+  <!-- 顶部栏 -->
+  <header class="sticky top-0 z-40 bg-white dark:bg-slate-800 border-b border-slate-200 dark:border-slate-700">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-14 flex items-center justify-between">
+      <div class="flex items-center gap-3">
+        <button id="btn-back-home" class="p-1.5 -ml-1.5 rounded-lg text-slate-500 hover:text-brand-600 dark:text-slate-400 dark:hover:text-brand-400 hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors" aria-label="返回首页">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18" /></svg>
+        </button>
+        <img src="/favicon.svg" alt="S2J" class="w-8 h-8 rounded-lg" />
+        <h1 class="font-bold text-slate-900 dark:text-white text-sm">S2J 文章管理</h1>
+      </div>
+      <div class="flex items-center gap-1">
+        <button id="theme-toggle" class="p-2 rounded-lg text-slate-500 hover:text-brand-600 dark:text-slate-400 dark:hover:text-brand-400 hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors" aria-label="切换主题">
+          <svg class="w-5 h-5 hidden dark:block" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z" /></svg>
+          <svg class="w-5 h-5 block dark:hidden" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z" /></svg>
+        </button>
+        <a href="/" target="_blank" class="ml-1 text-sm text-slate-600 dark:text-slate-300 hover:text-brand-600 dark:hover:text-brand-400 transition-colors px-3 py-2 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-700">返回网站</a>
+        <button id="btn-import" class="inline-flex items-center gap-1.5 px-3.5 py-2 bg-white dark:bg-slate-700 hover:bg-slate-50 dark:hover:bg-slate-600 text-slate-700 dark:text-slate-200 text-sm font-medium rounded-lg border border-slate-200 dark:border-slate-600 transition-colors" title="导入本地 .md / .mdx 文件">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" /></svg>
+          导入
+        </button>
+        <button id="btn-new-post" class="ml-2 inline-flex items-center gap-1.5 px-3.5 py-2 bg-brand-600 hover:bg-brand-700 text-white text-sm font-medium rounded-lg transition-colors">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" /></svg>
+          新建
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- 主内容区 -->
+  <main class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+    <!-- 筛选栏：标签式 + 搜索 -->
+    <div class="flex items-center justify-between gap-4 mb-4">
+      <div class="flex items-center gap-2 flex-shrink-0">
+        <button id="filter-all" class="filter-tab px-3.5 py-1.5 text-sm font-medium rounded-lg bg-brand-50 dark:bg-brand-900/30 text-brand-700 dark:text-brand-300 hover:bg-brand-100 dark:hover:bg-brand-900/50 transition-colors">全部 <span id="count-all" class="ml-1 text-xs opacity-70">0</span></button>
+        <button id="filter-published" class="filter-tab px-3.5 py-1.5 text-sm font-medium rounded-lg bg-white dark:bg-slate-800 text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors">已发布 <span id="count-published" class="ml-1 text-xs opacity-70">0</span></button>
+        <button id="filter-draft" class="filter-tab px-3.5 py-1.5 text-sm font-medium rounded-lg bg-white dark:bg-slate-800 text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors">草稿 <span id="count-draft" class="ml-1 text-xs opacity-70">0</span></button>
+        <button id="filter-featured" class="filter-tab px-3.5 py-1.5 text-sm font-medium rounded-lg bg-white dark:bg-slate-800 text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors">精选 <span id="count-featured" class="ml-1 text-xs opacity-70">0</span></button>
+      </div>
+      <div class="flex-1 max-w-xs relative">
+        <input id="filter-search" type="text" placeholder="搜索文章标题..." class="w-full px-3 py-1.5 pr-9 text-sm rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-200 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-brand-500" />
+        <svg class="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 pointer-events-none" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" /></svg>
+      </div>
+    </div>
+
+    <!-- 文章卡片列表 -->
+    <div id="post-list" class="space-y-3">
+      <div class="text-center text-slate-400 py-12">加载中...</div>
+    </div>
+
+    <!-- 分页 -->
+    <div id="pagination" class="mt-4 py-2.5 hidden items-center justify-end text-sm">
+      <div class="flex items-center gap-1.5">
+        <span id="page-numbers" class="flex items-center gap-1.5"></span>
+        <button id="page-next" class="w-8 h-8 rounded-full flex items-center justify-center text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-700 disabled:opacity-40 disabled:cursor-not-allowed transition-colors" aria-label="下一页">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" /></svg>
+        </button>
+        <input id="page-jump-input" type="number" min="1" class="w-12 h-8 px-2 text-center text-sm rounded-lg border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-200 focus:outline-none focus:ring-2 focus:ring-brand-500" placeholder="1" />
+        <button id="page-jump-btn" class="px-3 h-8 text-sm text-slate-600 dark:text-slate-300 hover:text-brand-600 dark:hover:text-brand-400 transition-colors">跳转</button>
+      </div>
+    </div>
+  </main>
+</div>

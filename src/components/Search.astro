@@ -1,0 +1,196 @@
+---
+/**
+ * 全站搜索组件（基于 Pagefind）
+ * - 导航栏搜索按钮
+ * - 点击/快捷键 Ctrl+K 打开搜索弹窗
+ * - ESC / 点击遮罩关闭
+ */
+---
+
+<!-- 导航栏搜索按钮（纯图标，保持简洁） -->
+<button
+  id="search-trigger"
+  class="hidden md:flex items-center justify-center w-9 h-9 rounded-lg text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 hover:text-brand-600 dark:hover:text-brand-400 transition-colors"
+  aria-label="搜索"
+  title="搜索 (Ctrl+K)"
+>
+  <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+  </svg>
+</button>
+
+<!-- 移动端搜索按钮（图标） -->
+<button
+  id="search-trigger-mobile"
+  class="md:hidden p-2 rounded-lg text-slate-500 hover:text-brand-600 dark:text-slate-400 dark:hover:text-brand-400 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
+  aria-label="搜索"
+>
+  <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+  </svg>
+</button>
+
+<!-- 搜索遮罩 -->
+<div id="search-overlay" class="fixed inset-0 bg-black/50 z-[70] hidden opacity-0 transition-opacity duration-200"></div>
+
+<!-- 搜索弹窗 -->
+<div id="search-modal" class="fixed top-[10%] left-1/2 -translate-x-1/2 w-full max-w-2xl z-[80] hidden opacity-0 scale-95 transition-all duration-200 px-4">
+  <div class="bg-white dark:bg-slate-900 rounded-2xl shadow-2xl border border-slate-200 dark:border-slate-700 overflow-hidden">
+    <!-- 搜索框头部 -->
+    <div class="flex items-center gap-3 px-4 py-3 border-b border-slate-200 dark:border-slate-700">
+      <svg class="w-5 h-5 text-slate-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+      </svg>
+      <input
+        id="search-input"
+        type="text"
+        placeholder="输入关键词搜索文档..."
+        class="flex-1 bg-transparent text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none text-base"
+        autocomplete="off"
+        spellcheck="false"
+      />
+      <button id="search-close" class="p-1.5 rounded-lg text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors" aria-label="关闭搜索">
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+        </svg>
+      </button>
+    </div>
+    <!-- Pagefind 搜索结果 -->
+    <div id="pagefind-search" class="max-h-[60vh] overflow-y-auto"></div>
+    <!-- 底部提示 -->
+    <div class="px-4 py-2.5 border-t border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/50 flex items-center justify-between text-xs text-slate-400">
+      <div class="flex items-center gap-4">
+        <span class="flex items-center gap-1">
+          <kbd class="px-1.5 py-0.5 font-mono bg-white dark:bg-slate-900 rounded border border-slate-300 dark:border-slate-600">↑↓</kbd>
+          导航
+        </span>
+        <span class="flex items-center gap-1">
+          <kbd class="px-1.5 py-0.5 font-mono bg-white dark:bg-slate-900 rounded border border-slate-300 dark:border-slate-600">↵</kbd>
+          打开
+        </span>
+        <span class="flex items-center gap-1">
+          <kbd class="px-1.5 py-0.5 font-mono bg-white dark:bg-slate-900 rounded border border-slate-300 dark:border-slate-600">esc</kbd>
+          关闭
+        </span>
+      </div>
+      <span>Powered by Pagefind</span>
+    </div>
+  </div>
+</div>
+
+<!-- Pagefind 样式 -->
+<link rel="stylesheet" href="/pagefind/pagefind-ui.css" />
+
+<style>
+  /* Pagefind 结果样式适配暗色模式和品牌色 */
+  :root {
+    --pagefind-ui-primary: #1e40af;
+    --pagefind-ui-text: #0f172a;
+    --pagefind-ui-background: #ffffff;
+    --pagefind-ui-border: #e2e8f0;
+    --pagefind-ui-tag: #f1f5f9;
+  }
+  .dark {
+    --pagefind-ui-primary: #60a5fa;
+    --pagefind-ui-text: #f1f5f9;
+    --pagefind-ui-background: #0f172a;
+    --pagefind-ui-border: #334155;
+    --pagefind-ui-tag: #1e293b;
+  }
+  .pagefind-ui {
+    --pagefind-ui-scale: 0.9;
+  }
+  .pagefind-ui__search-input {
+    display: none !important;
+  }
+  .pagefind-ui__result-link {
+    color: var(--pagefind-ui-primary) !important;
+  }
+  .pagefind-ui__result-excerpt mark {
+    background-color: rgba(30, 64, 175, 0.15) !important;
+    color: inherit !important;
+  }
+  .dark .pagefind-ui__result-excerpt mark {
+    background-color: rgba(96, 165, 250, 0.2) !important;
+  }
+</style>
+
+<script>
+  // Pagefind 搜索交互
+  const searchTrigger = document.getElementById('search-trigger');
+  const searchTriggerMobile = document.getElementById('search-trigger-mobile');
+  const searchOverlay = document.getElementById('search-overlay');
+  const searchModal = document.getElementById('search-modal');
+  const searchClose = document.getElementById('search-close');
+  const searchInput = document.getElementById('search-input');
+  let pagefindInstance = null;
+  let pagefindInitialized = false;
+
+  const openSearch = () => {
+    searchOverlay?.classList.remove('hidden');
+    searchModal?.classList.remove('hidden');
+    requestAnimationFrame(() => {
+      searchOverlay?.classList.remove('opacity-0');
+      searchModal?.classList.remove('opacity-0', 'scale-95');
+    });
+    document.body.style.overflow = 'hidden';
+    setTimeout(() => searchInput?.focus(), 100);
+
+    // 懒加载 Pagefind（首次打开时初始化）
+    if (!pagefindInitialized) {
+      pagefindInitialized = true;
+      const script = document.createElement('script');
+      script.src = '/pagefind/pagefind-ui.js';
+      script.onload = () => {
+        if (window.PagefindUI) {
+          new PagefindUI({
+            element: '#pagefind-search',
+            showSubResults: true,
+            showImages: false,
+            resetStyles: false,
+          });
+          // 将外部输入框的输入同步到 Pagefind
+          searchInput?.addEventListener('input', (e) => {
+            const pagefindInput = document.querySelector('.pagefind-ui__search-input');
+            if (pagefindInput) {
+              pagefindInput.value = e.target.value;
+              pagefindInput.dispatchEvent(new Event('input'));
+            }
+          });
+        }
+      };
+      document.head.appendChild(script);
+    }
+  };
+
+  const closeSearch = () => {
+    searchOverlay?.classList.add('opacity-0');
+    searchModal?.classList.add('opacity-0', 'scale-95');
+    setTimeout(() => {
+      searchOverlay?.classList.add('hidden');
+      searchModal?.classList.add('hidden');
+    }, 200);
+    document.body.style.overflow = '';
+    searchInput.value = '';
+  };
+
+  searchTrigger?.addEventListener('click', openSearch);
+  searchTriggerMobile?.addEventListener('click', openSearch);
+  searchClose?.addEventListener('click', closeSearch);
+  searchOverlay?.addEventListener('click', closeSearch);
+
+  // 快捷键 Ctrl+K / Cmd+K
+  document.addEventListener('keydown', (e) => {
+    if ((e.metaKey || e.ctrlKey) && e.key === 'k') {
+      e.preventDefault();
+      if (searchModal?.classList.contains('hidden')) {
+        openSearch();
+      } else {
+        closeSearch();
+      }
+    }
+    if (e.key === 'Escape' && !searchModal?.classList.contains('hidden')) {
+      closeSearch();
+    }
+  });
+</script>

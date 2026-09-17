@@ -1,0 +1,222 @@
+---
+title: "Java AI 概览 - 用 Java 拥抱大模型时代"
+description: "AI 时代，Java 开发者何去何从？全面了解 Java AI 技术栈：Spring AI、LangChain4j、本地大模型集成，以及 Java 在 AI 应用开发中的优势与定位。"
+category: "java-ai"
+tags: ["Java AI", "Spring AI", "LangChain4j", "大模型", "RAG"]
+pubDate: "2026-09-17 22:35:36"
+updatedDate: "2026-09-12"
+author: "S2J"
+featured: true
+draft: false
+published: true
+order: 1
+keywords: ["Java AI", "Spring AI", "LangChain4j", "大模型", "RAG"]
+chapter: "AI 入门"
+---
+AI 浪潮席卷而来，Python 似乎成了 AI 开发的代名词。但作为 Java 开发者，你不必转行——Java 生态正在快速补齐 AI 能力，企业级 AI 应用开发，Java 依然有不可替代的优势。
+
+这篇文章将带你全面了解 Java AI 的技术版图，以及 S2J Java AI 系列的学习路线。
+
+## 为什么 Java 也能做 AI？
+
+很多人有一个误区：AI = Python。实际上，AI 开发可以分为两个层次：
+
+| 层次       | 内容                                             | 主流语言                          |
+| ---------- | ------------------------------------------------ | --------------------------------- |
+| **模型层** | 模型训练、算法研究、框架开发                     | Python（PyTorch、TensorFlow）     |
+| **应用层** | 调用模型 API、构建 RAG、开发 Agent、企业系统集成 | **任何语言都可以，Java 完全胜任** |
+
+**绝大多数企业需要的是应用层开发**——把大模型能力集成到现有业务系统中，构建智能客服、文档问答、代码助手、数据分析等应用。而这恰恰是 Java 的强项：
+
+- **企业级生态成熟**：Spring 生态、事务管理、安全框架、分布式架构
+- **稳定性与性能**：JVM 经过数十年优化，高并发场景表现优异
+- **现有系统集成**：大量企业核心系统运行在 Java 上，AI 能力可以无缝集成
+- **人才储备充足**：Java 开发者基数大，团队转型成本低
+
+## Java AI 技术版图
+
+目前 Java AI 生态正在快速发展，主要有以下几个核心框架和工具：
+
+### 1. Spring AI
+
+**定位**：Spring 官方推出的 AI 应用开发框架，是 Spring 生态的 AI 延伸。
+
+```xml
+<!-- Maven 依赖 -->
+<dependency>
+    <groupId>org.springframework.ai</groupId>
+    <artifactId>spring-ai-openai-spring-boot-starter</artifactId>
+    <version>1.0.0</version>
+</dependency>
+```
+
+**核心特性**：
+
+- 统一的 API 抽象，支持 OpenAI、Anthropic、Azure OpenAI、Ollama、智谱 AI、通义千问等多种模型
+- 自动配置，与 Spring Boot 无缝集成
+- 支持 Prompt 模板、输出解析、函数调用（Function Calling）
+- 内置 RAG（检索增强生成）支持：文档加载、向量存储、嵌入模型
+- 支持 AI 记忆（Memory）和多轮对话
+
+**适用场景**：已经在使用 Spring Boot 的企业项目，希望以最小成本接入 AI 能力。
+
+### 2. LangChain4j
+
+**定位**：Java 版的 LangChain，由社区驱动的 AI 应用开发库。
+
+```xml
+<dependency>
+    <groupId dev.langchain4j</groupId>
+    <artifactId>langchain4j</artifactId>
+    <version>0.35.0</version>
+</dependency>
+```
+
+**核心特性**：
+
+- 功能全面，对标 Python LangChain
+- 支持 20+ 大模型提供商
+- 丰富的文档加载器（PDF、Word、HTML、Markdown 等）
+- 多种向量数据库集成（Pinecone、Chroma、Milvus、PGVector 等）
+- AI Services 抽象：用接口定义 AI 代理，类似 Feign 的声明式风格
+- 内置 Agent、Tool、Memory 等高级抽象
+
+**适用场景**：需要更灵活的 AI 应用编排，不局限于 Spring 生态的项目。
+
+### 3. 本地大模型集成
+
+**定位**：在本地或私有环境运行大模型，数据不出内网，满足合规要求。
+
+**主流方案**：
+
+- **Ollama**：最流行的本地大模型运行工具，一行命令启动，支持 Llama、Qwen、Mistral 等模型
+- **Spring AI Ollama 集成**：通过 Spring AI 直接调用本地 Ollama 服务
+- **DJL（Deep Java Library）**：Amazon 推出的 Java 深度学习库，可以直接在 JVM 中运行模型推理
+
+```java
+// Spring AI 调用本地 Ollama 示例
+@RestController
+public class OllamaController {
+
+    private final ChatModel chatModel;
+
+    public OllamaController(OllamaChatModel chatModel) {
+        this.chatModel = chatModel;
+    }
+
+    @GetMapping("/ai/chat")
+    public String chat(@RequestParam String message) {
+        return chatModel.call(message);
+    }
+}
+```
+
+### 4. 其他重要工具
+
+| 工具                       | 用途                             |
+| -------------------------- | -------------------------------- |
+| **Spring AI Alibaba**      | 阿里开源，集成通义千问、百炼平台 |
+| **Semantic Kernel (Java)** | 微软推出的 AI 编排框架，Java 版  |
+| **LLM4J**                  | 轻量级大模型调用库               |
+| **Vector DB Java SDK**     | 各类向量数据库的 Java 客户端     |
+
+## 核心概念速览
+
+在开始 Java AI 开发之前，需要理解以下核心概念：
+
+### Prompt Engineering（提示词工程）
+
+Prompt 是人与大模型沟通的语言。好的 Prompt 能显著提升输出质量。
+
+```java
+// Spring AI Prompt 模板示例
+@Bean
+public PromptTemplate greetingPrompt() {
+    return new PromptTemplate("""
+        你是一个专业的 Java 技术顾问。
+        请用简洁明了的方式回答以下问题，并给出代码示例。
+
+        问题：{question}
+
+        回答要求：
+        1. 先给出核心结论
+        2. 然后给出完整代码示例
+        3. 最后说明注意事项
+        """);
+}
+```
+
+### RAG（检索增强生成）
+
+RAG 是目前企业 AI 应用最常用的架构：先从知识库中检索相关文档，再让大模型基于检索结果回答问题。
+
+**RAG 工作流程**：
+
+1. **文档加载**：读取 PDF、Word、网页等文档
+2. **文档切分**：将长文档切成小块（Chunk）
+3. **向量化**：用 Embedding 模型将文本块转为向量
+4. **存储**：将向量存入向量数据库
+5. **检索**：用户提问时，将问题向量化，检索最相似的文档块
+6. **生成**：将检索到的文档 + 用户问题一起传给大模型，生成回答
+
+### Function Calling（函数调用）
+
+大模型可以根据用户问题，决定调用外部函数/工具来获取信息，再基于返回结果回答。
+
+```java
+// LangChain4j 函数调用示例
+@Tool("查询指定城市的当前天气")
+public String getWeather(@P("城市名称") String city) {
+    // 调用天气 API
+    return weatherService.getCurrentWeather(city);
+}
+```
+
+### AI Agent
+
+Agent 是更高阶的 AI 应用形态：大模型可以自主规划任务、调用工具、观察结果、迭代执行，直到完成目标。
+
+## S2J Java AI 学习路线
+
+我们将按照以下顺序，逐步带你掌握 Java AI 开发：
+
+### 第一阶段：入门基础
+
+1. **环境搭建**：JDK 21+、Maven/Gradle、IDE 配置
+2. **第一个 AI 应用**：用 Spring AI 调用 OpenAI API
+3. **Prompt 模板与输出解析**：结构化大模型输出
+4. **本地大模型**：Ollama 安装与 Spring AI 集成
+
+### 第二阶段：RAG 实战
+
+5. **文档加载与切分**：支持 PDF、Word、Markdown 等格式
+6. **Embedding 与向量数据库**：理解向量化原理，集成 PGVector/Milvus
+7. **完整 RAG 应用**：从零构建一个企业文档问答系统
+8. **RAG 优化技巧**：检索策略、重排序、Prompt 优化
+
+### 第三阶段：高级应用
+
+9. **Function Calling**：让大模型调用你的 Java 方法
+10. **AI Memory**：多轮对话与记忆管理
+11. **AI Agent 开发**：构建自主任务执行代理
+12. **生产化部署**：限流、缓存、监控、成本控制
+
+## 学习建议
+
+1. **动手实践**：AI 开发是实践驱动的，每一个概念都要写代码验证
+2. **从简单开始**：先跑通最简单的 API 调用，再逐步叠加 RAG、Agent 等复杂能力
+3. **理解原理**：不要只停留在调用 API，理解 RAG、Embedding、Token 等底层概念
+4. **关注成本**：大模型调用是付费的，开发时注意控制 Token 消耗
+5. **重视安全**：AI 应用有独特的安全风险（Prompt 注入、数据泄露），需要提前防范
+
+## 小结
+
+Java AI 不是"Python 的替代品"，而是**企业级 AI 应用开发的另一条成熟路径**。对于已经掌握 Java 技术栈的开发者来说，学习 Spring AI 和 LangChain4j，是拥抱 AI 时代成本最低、收益最高的方式。
+
+S2J 的 Java AI 系列将用最简单的方式，带你从第一个 API 调用开始，逐步构建生产级的 AI 应用。
+
+> **S2J 理念**：AI 时代，Java 开发者不需要转行，只需要扩展技能树。让我们用熟悉的 Java，构建下一代智能应用。
+
+---
+
+> **下一篇预告**：「环境搭建与第一个 Spring AI 应用」正在撰写中，敬请期待。你可以先浏览 [Java AI 分类](/docs/java-ai) 下的其他内容。

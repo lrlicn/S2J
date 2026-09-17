@@ -1,0 +1,64 @@
+---
+import '@styles/global.css';
+import '@styles/admin.css';
+import HomeView from '../../components/admin/HomeView.astro';
+import PostListView from '../../components/admin/PostListView.astro';
+import EditorView from '../../components/admin/EditorView.astro';
+import Toast from '../../components/admin/Toast.astro';
+
+// 仅开发模式可用
+const isDev = import.meta.env.DEV;
+---
+
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>文章管理 | S2J Admin</title>
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+  <script is:inline>
+    // 主题尽早初始化，避免暗色模式闪烁
+    (function () {
+      try {
+        const theme = localStorage.getItem('theme');
+        if (
+          theme === 'dark' ||
+          (!theme && window.matchMedia('(prefers-color-scheme: dark)').matches)
+        ) {
+          document.documentElement.classList.add('dark');
+        }
+      } catch (e) {}
+    })();
+  </script>
+</head>
+<body class="bg-slate-50 dark:bg-slate-900 min-h-screen">
+{isDev ? (
+<>
+  <!-- 启动遮罩：在路由首次分发前覆盖，防止视图闪烁 / 错位（main.js 初始化后移除） -->
+  <div id="admin-boot">
+    <div class="boot-spinner"></div>
+    <span>正在加载管理后台…</span>
+  </div>
+
+  <HomeView />
+  <PostListView />
+  <EditorView />
+  <Toast />
+
+  <script>
+    import '../../scripts/admin/main.js';
+  </script>
+</>
+) : (
+<>
+  <div class="min-h-screen flex items-center justify-center">
+    <div class="text-center">
+      <h1 class="text-4xl font-bold text-slate-900 dark:text-white mb-4">页面不存在</h1>
+      <a href="/" class="text-brand-600 dark:text-brand-400 hover:underline">返回首页</a>
+    </div>
+  </div>
+</>
+)}
+</body>
+</html>

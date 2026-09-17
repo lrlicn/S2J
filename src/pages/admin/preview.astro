@@ -1,0 +1,92 @@
+---
+import Layout from '../../layouts/Layout.astro';
+---
+
+<Layout title="预览 | S2J" description="文章预览">
+  <div class="container-page py-12">
+    <article class="max-w-3xl mx-auto">
+      <!-- 文章头部 -->
+      <header class="mb-8 pb-8 border-b border-slate-200 dark:border-slate-700">
+        <div class="flex items-center gap-3 mb-4">
+          <span id="preview-category" class="tag"></span>
+          <span id="preview-featured" class="hidden inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-accent-100 text-accent-800 dark:bg-accent-900/40 dark:text-accent-300">精选</span>
+        </div>
+        <div class="mb-4">
+          <h1 id="preview-title" style="display: inline-block; border-radius: 9999px;" class="text-2xl md:text-3xl font-bold text-slate-900 dark:text-white leading-tight px-6 py-2.5 bg-brand-50 dark:bg-brand-900/30"></h1>
+        </div>
+        <p id="preview-description" class="text-lg text-slate-600 dark:text-slate-400 leading-relaxed mb-6"></p>
+        <div class="flex flex-wrap items-center gap-4 text-sm text-slate-500 dark:text-slate-400">
+          <span>S2J</span>
+          <span id="preview-date"></span>
+        </div>
+      </header>
+
+      <!-- 文章内容 -->
+      <div id="preview-content" class="prose prose-slate dark:prose-invert max-w-none prose-headings:scroll-mt-24 prose-a:text-brand-600 dark:prose-a:text-brand-400 prose-pre:bg-code-bg prose-pre:border prose-pre:border-code-border"></div>
+
+      <!-- 底部操作按钮 -->
+      <div class="mt-12 pt-8 border-t border-slate-200 dark:border-slate-700 text-center">
+        <button id="btn-edit" class="px-6 py-2.5 bg-brand-600 hover:bg-brand-700 text-white text-sm font-medium rounded-lg transition-colors">编辑文章</button>
+      </div>
+    </article>
+  </div>
+
+  <script>
+    import { marked } from 'marked';
+
+    // 从 sessionStorage 读取预览数据
+    const raw = sessionStorage.getItem('s2j_preview_data');
+    if (!raw) {
+      document.getElementById('preview-content').innerHTML = '<p class="text-slate-500">没有找到预览数据</p>';
+      document.getElementById('btn-edit').style.display = 'none';
+    } else {
+      const data = JSON.parse(raw);
+      
+      // 填充文章头部
+      document.getElementById('preview-title').textContent = data.title || '未命名文章';
+      document.title = `${data.title || '预览'} | S2J`;
+      
+      const categoryEl = document.getElementById('preview-category');
+      if (data.category) {
+        categoryEl.textContent = data.category;
+      }
+      
+      const featuredEl = document.getElementById('preview-featured');
+      if (data.featured) {
+        featuredEl.classList.remove('hidden');
+      }
+      
+      const descEl = document.getElementById('preview-description');
+      if (data.description) {
+        descEl.textContent = data.description;
+      } else {
+        descEl.remove();
+      }
+      
+      const dateEl = document.getElementById('preview-date');
+      if (data.pubDate) {
+        dateEl.textContent = new Date(data.pubDate).toLocaleDateString('zh-CN');
+      } else {
+        dateEl.remove();
+      }
+
+      // 渲染 Markdown 内容
+      const contentEl = document.getElementById('preview-content');
+      if (data.content) {
+        contentEl.innerHTML = marked.parse(data.content);
+      }
+
+      // 编辑按钮：跳回 admin 并打开编辑器（使用 hash 路由）
+      document.getElementById('btn-edit').addEventListener('click', () => {
+        if (data.slug) {
+          window.location.href = `/admin#/edit/${encodeURIComponent(data.slug)}`;
+        } else {
+          window.location.href = '/admin#/home';
+        }
+      });
+
+      // 预览完成后清理 sessionStorage
+      sessionStorage.removeItem('s2j_preview_data');
+    }
+  </script>
+</Layout>

@@ -1,0 +1,15 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" fill="none">
+  <defs>
+    <linearGradient id="bgA" x1="0" y1="0" x2="64" y2="64" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#1e40af"/>
+      <stop offset="1" stop-color="#3b82f6"/>
+    </linearGradient>
+  </defs>
+  <!-- 背景：深蓝渐变圆角方形 -->
+  <rect width="64" height="64" rx="14" fill="url(#bgA)"/>
+  <!-- S→J 融合曲线：S 的末端自然延伸成 J，整体一条连续路径 -->
+  <path d="M16 20 C12 16 50 18 48 30 C46 36 18 34 16 42 C14 50 26 54 34 50 C36 52 36 55 34 57 C32 59 28 59 26 57"
+        stroke="white" stroke-width="5" stroke-linecap="round" fill="none"/>
+  <!-- "2" 用琥珀色小圆点表示，代表 S to J 中的 to -->
+  <circle cx="26" cy="40" r="2.5" fill="#f59e0b"/>
+</svg>

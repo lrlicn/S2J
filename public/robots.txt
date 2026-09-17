@@ -1,0 +1,11 @@
+# S2J - Sample Java
+# https://s2j.dev
+
+User-agent: *
+Allow: /
+
+# 禁止爬取构建产物和内部路径
+Disallow: /_astro/
+
+# 站点地图
+Sitemap: https://s2j.dev/sitemap-index.xml

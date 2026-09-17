@@ -1,0 +1,144 @@
+---
+import { getCollection, type CollectionEntry } from 'astro:content';
+import Layout from '@layouts/Layout.astro';
+import { categories, getCategoryById } from '../../config/categories';
+
+// 获取所有已发布文档
+const allDocs = (await getCollection('docs', ({ data }) => !data.draft && data.published)).sort(
+  (a, b) => a.data.order - b.data.order
+);
+
+// 按分类分组
+const docsByCategory = allDocs.reduce((acc, doc) => {
+  const cat = doc.data.category;
+  if (!acc[cat]) acc[cat] = [];
+  acc[cat].push(doc);
+  return acc;
+}, {} as Record<string, CollectionEntry<'docs'>[]>);
+
+// 按导航排序展示所有分类（包括暂无内容的分类）
+const sortedCategoryIds = categories
+  .sort((a, b) => a.navOrder - b.navOrder)
+  .map((c) => c.id);
+---
+
+<Layout title="文档 | S2J - 简单学 Java" description="S2J 全部学习文档，简单易懂，覆盖 Java 基础、Spring 生态与 Java AI">
+
+  <section class="py-10 md:py-14">
+    <div class="container-page max-w-3xl">
+      <!-- 页面小标题 -->
+      <div class="flex items-center gap-3 mb-6">
+        <h1 class="text-lg font-bold text-slate-900 dark:text-white">全部文档</h1>
+        <span class="text-sm text-slate-400 dark:text-slate-500">{allDocs.length} 篇</span>
+      </div>
+
+      {allDocs.length > 0 ? (
+        <!-- 分类折叠手风琴 -->
+        <div class="space-y-3" id="category-accordion">
+          {sortedCategoryIds.map((categoryId, index) => {
+            const docs = docsByCategory[categoryId] || [];
+            const info = getCategoryById(categoryId)!;
+            return (
+            <div class={`chapter-item border border-slate-200 dark:border-slate-700 rounded-xl overflow-hidden ${info.lightBg}`} data-open={index === 0 ? 'true' : 'false'}>
+              <!-- 分类标题栏 -->
+              <button class="chapter-header w-full flex items-center justify-between px-5 py-4 hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors cursor-pointer text-left">
+                <div class="flex items-center gap-3">
+                  <span class="text-base font-semibold text-slate-900 dark:text-white">{info.name}</span>
+                  <span class="text-xs text-slate-400 dark:text-slate-500 bg-slate-100 dark:bg-slate-700 px-2 py-0.5 rounded-full">{docs.length} 篇</span>
+                </div>
+                <svg class="chapter-arrow w-5 h-5 text-slate-400 transition-transform duration-300 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+                </svg>
+              </button>
+
+              <!-- 分类内容（文章列表或占位） -->
+              <div class="chapter-content overflow-hidden transition-all duration-300" style="max-height: 0;">
+                <div class="px-5 pb-4 pt-1">
+                  {docs.length > 0 ? (
+                    <div class="divide-y divide-slate-100 dark:divide-slate-700/50">
+                      {docs.map((doc, i) => (
+                        <a
+                          href={`/docs/${doc.id.replace(/\.mdx?$/, '')}`}
+                          class="flex items-center justify-between py-2.5 px-4 group hover:bg-brand-50 dark:hover:bg-brand-900/20 rounded-full transition-colors"
+                        >
+                          <div class="flex items-center gap-3 min-w-0">
+                            <span class="font-mono text-xs text-slate-300 dark:text-slate-600 w-5 flex-shrink-0 text-right select-none">
+                              {String(i + 1).padStart(2, '0')}
+                            </span>
+                            {doc.data.featured && (
+                              <span class="inline-flex items-center flex-shrink-0 text-[10px] font-medium leading-4 px-1.5 py-px rounded bg-accent-50 text-accent-700 border border-accent-200 dark:bg-accent-900/40 dark:text-accent-300 dark:border-accent-800/60">精选</span>
+                            )}
+                            <span class="text-sm font-medium text-slate-700 dark:text-slate-200 group-hover:text-brand-600 dark:group-hover:text-brand-400 transition-colors truncate">
+                              {doc.data.title}
+                            </span>
+                          </div>
+                          <div class="flex items-center gap-3 flex-shrink-0 ml-4">
+                            <div class="hidden sm:flex gap-1">
+                              {doc.data.tags.slice(0, 2).map((tag) => (
+                                <span class="text-xs text-slate-400 dark:text-slate-500 bg-slate-50 dark:bg-slate-700/50 px-1.5 py-0.5 rounded">{tag}</span>
+                              ))}
+                            </div>
+                            <span class="text-xs text-slate-400 dark:text-slate-500">
+                              {doc.data.pubDate ? doc.data.pubDate.toLocaleDateString('zh-CN') : ''}
+                            </span>
+                          </div>
+                        </a>
+                      ))}
+                    </div>
+                  ) : (
+                    <div class="py-6 text-center">
+                      <p class="text-sm text-slate-400 dark:text-slate-500">内容正在准备中，敬请期待</p>
+                    </div>
+                  )}
+                </div>
+              </div>
+            </div>
+          );
+          })}
+        </div>
+      ) : (
+        <!-- 空状态 -->
+        <div class="text-center py-16">
+          <h3 class="text-lg font-bold text-slate-900 dark:text-white mb-2">内容正在准备中</h3>
+          <p class="text-sm text-slate-500 dark:text-slate-400">S2J 的文档体系正在逐步完善</p>
+        </div>
+      )}
+    </div>
+  </section>
+
+  <script>
+    // 分类折叠手风琴交互
+    document.querySelectorAll('.chapter-item').forEach((item) => {
+      const header = item.querySelector('.chapter-header') as HTMLElement;
+      const content = item.querySelector('.chapter-content') as HTMLElement;
+      const arrow = item.querySelector('.chapter-arrow') as HTMLElement;
+
+      // 初始化：默认展开第一个
+      if (item.dataset.open === 'true') {
+        content.style.maxHeight = content.scrollHeight + 'px';
+        arrow.style.transform = 'rotate(180deg)';
+      }
+
+      header.addEventListener('click', () => {
+        const isOpen = item.dataset.open === 'true';
+
+        if (isOpen) {
+          content.style.maxHeight = '0px';
+          arrow.style.transform = 'rotate(0deg)';
+          item.dataset.open = 'false';
+        } else {
+          content.style.maxHeight = content.scrollHeight + 'px';
+          arrow.style.transform = 'rotate(180deg)';
+          item.dataset.open = 'true';
+        }
+      });
+    });
+
+    // 窗口大小变化时重新计算展开的分类高度
+    window.addEventListener('resize', () => {
+      document.querySelectorAll('.chapter-item[data-open="true"] .chapter-content').forEach((content) => {
+        (content as HTMLElement).style.maxHeight = (content as HTMLElement).scrollHeight + 'px';
+      });
+    });
+  </script>
+</Layout>

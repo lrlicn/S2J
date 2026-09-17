@@ -1,0 +1,85 @@
+---
+import Layout from '@layouts/Layout.astro';
+import { getCategoryById } from '../config/categories';
+import { getCollection } from 'astro:content';
+
+// 获取所有已发布的文章
+const allDocs = await getCollection('docs', ({ data }) => data.draft !== true);
+
+// 按发布日期排序取最新的 5 篇
+const recentDocs = [...allDocs]
+  .sort((a, b) => {
+    const dateA = a.data.pubDate ? new Date(a.data.pubDate).getTime() : 0;
+    const dateB = b.data.pubDate ? new Date(b.data.pubDate).getTime() : 0;
+    return dateB - dateA;
+  })
+  .slice(0, 5);
+
+// 日期格式化
+function formatDate(date?: Date) {
+  if (!date) return '';
+  const d = new Date(date);
+  if (isNaN(d.getTime())) return '';
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+}
+---
+
+<Layout
+  title="S2J - Simple to Java | 简单学 Java"
+  description="S2J (Simple to Java) — 简单学 Java。从基础语法到企业级框架，再到 Java AI 应用开发。"
+>
+  <!-- Hero：深蓝渐变，视觉冲击 -->
+  <section class="py-24 md:py-32 bg-gradient-to-br from-brand-700 via-brand-800 to-brand-900 relative overflow-hidden">
+    <div class="absolute inset-0 opacity-10">
+      <div class="absolute top-10 left-10 w-64 h-64 bg-white rounded-full filter blur-3xl"></div>
+      <div class="absolute bottom-10 right-10 w-96 h-96 bg-accent-300 rounded-full filter blur-3xl"></div>
+    </div>
+    <div class="container-page relative text-center">
+      <h1 class="text-4xl md:text-6xl font-bold text-white tracking-tight">
+        简单学 Java
+      </h1>
+      <div class="mt-10">
+        <a
+          href="/docs"
+          class="inline-flex items-center justify-center px-8 py-4 bg-white text-brand-700 font-bold rounded-xl shadow-lg hover:shadow-xl hover:scale-105 transition-all duration-200"
+        >
+          开始学习
+          <svg class="w-5 h-5 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7l5 5m0 0l-5 5m5-5H6" />
+          </svg>
+        </a>
+      </div>
+    </div>
+  </section>
+
+  <!-- 最新文章 -->
+  <section class="py-16 md:py-20">
+    <div class="container-page max-w-2xl">
+      <h2 class="text-lg md:text-xl font-bold text-slate-900 dark:text-white mb-6">最新更新</h2>
+      {recentDocs.length > 0 ? (
+        <div class="space-y-1">
+          {recentDocs.map((doc) => {
+            const cat = getCategoryById(doc.data.category);
+            return (
+              <a
+                href={`/docs/${doc.data.category}/${doc.slug}`}
+                class="flex items-center justify-between gap-4 py-3 px-4 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors group"
+              >
+                <span class="font-medium text-slate-700 dark:text-slate-300 group-hover:text-brand-600 dark:group-hover:text-brand-400 transition-colors truncate">
+                  {doc.data.title}
+                </span>
+                <span class="text-sm text-slate-400 dark:text-slate-500 flex-shrink-0">
+                  {formatDate(doc.data.pubDate)}
+                </span>
+              </a>
+            );
+          })}
+        </div>
+      ) : (
+        <div class="text-center py-12 text-slate-400 dark:text-slate-500 text-sm">
+          内容正在准备中
+        </div>
+      )}
+    </div>
+  </section>
+</Layout>

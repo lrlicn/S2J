@@ -1,0 +1,178 @@
+/* 自托管字体（fontsource），避免依赖 Google Fonts CDN */
+@import '@fontsource/inter/400.css';
+@import '@fontsource/inter/500.css';
+@import '@fontsource/inter/600.css';
+@import '@fontsource/inter/700.css';
+@import '@fontsource/inter/800.css';
+@import '@fontsource/jetbrains-mono/400.css';
+@import '@fontsource/jetbrains-mono/500.css';
+@import '@fontsource/jetbrains-mono/600.css';
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* ============================================
+   S2J 全局样式
+   ============================================ */
+
+@layer base {
+  :root {
+    --color-bg: #ffffff;
+    --color-bg-secondary: #f8fafc;
+    --color-text: #0f172a;
+    --color-text-secondary: #475569;
+    --color-border: #e2e8f0;
+    --color-accent: #2563eb;
+  }
+
+  .dark {
+    --color-bg: #0f172a;
+    --color-bg-secondary: #1e293b;
+    --color-text: #f1f5f9;
+    --color-text-secondary: #94a3b8;
+    --color-border: #334155;
+    --color-accent: #3b82f6;
+  }
+
+  html {
+    scroll-behavior: smooth;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  body {
+    @apply font-sans text-slate-800 dark:text-slate-200 bg-white dark:bg-slate-900;
+    transition: background-color 0.3s ease, color 0.3s ease;
+  }
+
+  /* 选中文字颜色 */
+  ::selection {
+    @apply bg-brand-500/30 text-brand-900 dark:text-brand-100;
+  }
+
+  /* 滚动条样式 */
+  ::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+  }
+
+  ::-webkit-scrollbar-track {
+    @apply bg-slate-100 dark:bg-slate-800;
+  }
+
+  ::-webkit-scrollbar-thumb {
+    @apply bg-slate-300 dark:bg-slate-600 rounded-full;
+  }
+
+  ::-webkit-scrollbar-thumb:hover {
+    @apply bg-slate-400 dark:bg-slate-500;
+  }
+}
+
+@layer components {
+  /* 容器 */
+  .container-page {
+    @apply max-w-6xl mx-auto px-4 sm:px-6 lg:px-8;
+  }
+
+  /* 导航链接 */
+  .nav-link {
+    @apply text-slate-600 dark:text-slate-300 hover:text-brand-600 dark:hover:text-brand-400 transition-colors duration-200 font-medium relative;
+  }
+  .nav-link.active {
+    @apply text-brand-600 dark:text-brand-400;
+  }
+  .nav-link.active::after {
+    content: '';
+    @apply absolute -bottom-1 left-0 right-0 h-0.5 bg-brand-600 dark:bg-brand-400 rounded-full;
+  }
+
+  /* 卡片 */
+  .card {
+    @apply bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl shadow-sm hover:shadow-md transition-all duration-300;
+  }
+
+  /* 按钮 */
+  .btn-primary {
+    @apply inline-flex items-center justify-center px-6 py-3 bg-brand-600 hover:bg-brand-700 text-white font-semibold rounded-lg shadow-md hover:shadow-lg transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-brand-500 focus:ring-offset-2 dark:focus:ring-offset-slate-900;
+  }
+
+  .btn-secondary {
+    @apply inline-flex items-center justify-center px-6 py-3 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 font-semibold rounded-lg border border-slate-300 dark:border-slate-600 transition-all duration-200;
+  }
+
+  /* 标签 */
+  .tag {
+    @apply inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-brand-100 text-brand-800 dark:bg-brand-900/40 dark:text-brand-300;
+  }
+
+  /* 代码块优化 */
+  .prose pre {
+    @apply rounded-xl border border-slate-700 shadow-lg relative overflow-hidden;
+  }
+
+  .prose code {
+    @apply font-mono text-sm;
+  }
+
+  .prose :not(pre) > code {
+    @apply bg-slate-100 dark:bg-slate-800 text-brand-600 dark:text-brand-400 px-1.5 py-0.5 rounded text-[0.875em] font-medium;
+  }
+
+  /* 代码块语言标识 */
+  .code-lang {
+    @apply absolute top-0 left-0 px-3 py-1 text-[10px] font-mono font-semibold text-slate-400 bg-slate-800/80 rounded-br-lg uppercase tracking-wider;
+  }
+
+  /* 代码块复制按钮 */
+  .copy-btn {
+    @apply absolute top-2 right-2 p-1.5 rounded-md text-slate-400 hover:text-white bg-slate-700/50 hover:bg-slate-600/70 transition-all opacity-0 group-hover:opacity-100 focus:opacity-100 cursor-pointer border-0;
+  }
+
+  .prose pre:hover .copy-btn {
+    @apply opacity-100;
+  }
+
+  .copy-btn.copied {
+    @apply text-emerald-400 bg-emerald-900/50;
+  }
+
+  /* 代码块行号 */
+  .prose pre.has-line-numbers {
+    @apply flex;
+  }
+
+  .code-line-numbers {
+    @apply flex flex-col text-right pr-3 pl-4 py-4 text-xs font-mono text-slate-500 select-none border-r border-slate-700/50 bg-slate-800/30 flex-shrink-0;
+  }
+
+  .code-line-numbers span {
+    @apply leading-6;
+  }
+
+  .prose pre.has-line-numbers code {
+    @apply flex-1 overflow-x-auto;
+  }
+
+  /* 标题锚点链接 */
+  .prose h2 a,
+  .prose h3 a,
+  .prose h4 a {
+    @apply no-underline hover:underline;
+  }
+}
+
+@layer utilities {
+  .text-balance {
+    text-wrap: balance;
+  }
+
+  .gradient-text {
+    @apply bg-gradient-to-r from-brand-500 via-brand-600 to-brand-800 bg-clip-text text-transparent;
+  }
+
+  .glass {
+    @apply bg-white/80 dark:bg-slate-900/80 backdrop-blur-md;
+  }
+}

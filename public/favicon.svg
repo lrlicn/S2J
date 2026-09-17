@@ -1,0 +1,40 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" fill="none">
+  <defs>
+    <linearGradient id="bgPixel" x1="0" y1="0" x2="64" y2="64" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#1e40af"/>
+      <stop offset="1" stop-color="#3b82f6"/>
+    </linearGradient>
+  </defs>
+  <!-- 背景：深蓝渐变圆角方形 -->
+  <rect width="64" height="64" rx="14" fill="url(#bgPixel)"/>
+
+  <!-- 5x5 像素方块 S（全宽横条，更饱满标准） -->
+  <!-- 方块大小 8px，间距 2px，边距 8px，微圆角 -->
+
+  <!-- 行1：上横（全宽 列1-5） -->
+  <rect x="8" y="8" width="8" height="8" rx="1.5" fill="white"/>
+  <rect x="18" y="8" width="8" height="8" rx="1.5" fill="white"/>
+  <rect x="28" y="8" width="8" height="8" rx="1.5" fill="white"/>
+  <rect x="38" y="8" width="8" height="8" rx="1.5" fill="white"/>
+  <rect x="48" y="8" width="8" height="8" rx="1.5" fill="white"/>
+
+  <!-- 行2：左上竖（列1） -->
+  <rect x="8" y="18" width="8" height="8" rx="1.5" fill="white"/>
+
+  <!-- 行3：中横（全宽 列1-5），中间方块（列3）用琥珀色点缀 -->
+  <rect x="8" y="28" width="8" height="8" rx="1.5" fill="white"/>
+  <rect x="18" y="28" width="8" height="8" rx="1.5" fill="white"/>
+  <rect x="28" y="28" width="8" height="8" rx="1.5" fill="#f59e0b"/>
+  <rect x="38" y="28" width="8" height="8" rx="1.5" fill="white"/>
+  <rect x="48" y="28" width="8" height="8" rx="1.5" fill="white"/>
+
+  <!-- 行4：右下竖（列5） -->
+  <rect x="48" y="38" width="8" height="8" rx="1.5" fill="white"/>
+
+  <!-- 行5：下横（全宽 列1-5） -->
+  <rect x="8" y="48" width="8" height="8" rx="1.5" fill="white"/>
+  <rect x="18" y="48" width="8" height="8" rx="1.5" fill="white"/>
+  <rect x="28" y="48" width="8" height="8" rx="1.5" fill="white"/>
+  <rect x="38" y="48" width="8" height="8" rx="1.5" fill="white"/>
+  <rect x="48" y="48" width="8" height="8" rx="1.5" fill="white"/>
+</svg>

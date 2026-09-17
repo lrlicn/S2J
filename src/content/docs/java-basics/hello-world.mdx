@@ -1,0 +1,237 @@
+---
+title: "Hello World - 你的第一个 Java 程序"
+description: "从经典的 Hello World 开始，理解 Java 程序的基本结构、编译运行流程，以及 main 方法的作用。"
+category: "java-basics"
+tags: ["Java", "入门", "基础语法"]
+pubDate: "2026-09-17 22:35:43"
+updatedDate: "2026-09-10"
+author: "S2J"
+featured: true
+draft: false
+published: true
+order: 1
+keywords: ["Java", "入门", "基础语法"]
+chapter: "入门基础"
+---
+每一个 Java 程序员的旅程，都从一行 `System.out.println("Hello, World!")` 开始。这篇文章将带你完整理解这个最简单的 Java 程序背后的一切。
+
+## 完整代码示例
+
+```java
+package dev.s2j.basics;
+
+/**
+ * HelloWorld - S2J Java 基础系列第一个示例
+ * 
+ * <p>这个程序展示了 Java 程序的基本结构：
+ * <ul>
+ *   <li>包声明</li>
+ *   <li>类定义</li>
+ *   <li>main 方法（程序入口）</li>
+ * </ul>
+ * </p>
+ * 
+ * @author S2J
+ * @version 1.0
+ */
+public class HelloWorld {
+
+    /**
+     * 程序入口方法
+     * 
+     * @param args 命令行参数，运行程序时可以传入
+     */
+    public static void main(String[] args) {
+        // 向控制台输出问候语
+        System.out.println("Hello, World!");
+        System.out.println("欢迎来到 S2J - 简单学 Java!");
+        
+        // 如果传入了命令行参数，打印出来
+        if (args.length > 0) {
+            System.out.println("\n你传入的参数：");
+            for (int i = 0; i < args.length; i++) {
+                System.out.printf("  参数 %d: %s%n", i + 1, args[i]);
+            }
+        }
+    }
+}
+```
+
+## 逐行解析
+
+让我们拆解这个程序的每一个部分，理解它们的作用。
+
+### 1. 包声明
+
+```java
+package dev.s2j.basics;
+```
+
+包声明是 Java 程序的第一行（注释除外）。它的作用是：
+
+- **组织代码**：将相关的类组织在一起，类似文件系统中的文件夹
+- **避免命名冲突**：不同包中可以有同名的类
+- **控制访问**：包是 Java 访问控制的基本单位之一
+
+> **命名约定**：包名通常使用公司域名的反转形式，全部小写。例如 `dev.s2j.basics` 表示 `s2j.dev` 网站的 basics 模块。
+
+### 2. 类定义
+
+```java
+public class HelloWorld {
+    // 类的内容
+}
+```
+
+Java 是纯面向对象语言，**所有代码都必须写在类中**。这里定义了一个名为 `HelloWorld` 的公开类。
+
+几个关键点：
+
+- `public` 表示这个类可以被其他任何类访问
+- `class` 是定义类的关键字
+- `HelloWorld` 是类名，**必须与文件名完全一致**（包括大小写）
+- 类名使用大驼峰命名法（PascalCase）：每个单词首字母大写
+
+> **重要规则**：一个 `.java` 文件中可以有多个类，但**最多只能有一个 public 类**，且这个 public 类的名字必须与文件名相同。
+
+### 3. main 方法 - 程序入口
+
+```java
+public static void main(String[] args) {
+    // 方法体
+}
+```
+
+`main` 方法是 Java 程序的**唯一入口点**。JVM（Java 虚拟机）启动时会寻找这个方法并执行它。
+
+让我们逐个理解修饰符：
+
+| 修饰符 | 作用 | 为什么需要 |
+|--------|------|-----------|
+| `public` | 公开访问 | JVM 需要从外部调用这个方法 |
+| `static` | 静态方法 | JVM 调用时不需要创建对象实例，直接通过类名调用 |
+| `void` | 无返回值 | 程序入口不需要返回值给 JVM |
+| `main` | 方法名 | JVM 固定寻找这个方法名，不可更改 |
+| `String[] args` | 命令行参数 | 运行程序时可以传入参数，以字符串数组形式接收 |
+
+> **面试高频题**：为什么 main 方法必须是 `public static void`？
+> - `public`：JVM 要从外部调用，必须公开
+> - `static`：JVM 调用时没有对象实例，只能调用静态方法
+> - `void`：入口方法不需要返回值，JVM 不接收返回值
+
+### 4. 输出语句
+
+```java
+System.out.println("Hello, World!");
+```
+
+这是 Java 中最常用的控制台输出语句。拆解来看：
+
+- `System`：`java.lang` 包中的核心类，提供系统级功能
+- `out`：`System` 类的静态成员，是 `PrintStream` 类型，代表标准输出流（控制台）
+- `println()`：打印一行内容并换行（print line 的缩写）
+
+**常见输出方法对比**：
+
+```java
+System.out.print("Hello");   // 不换行
+System.out.println("World"); // 换行
+System.out.printf("名字: %s, 年龄: %d%n", "张三", 25); // 格式化输出
+```
+
+## 编译与运行
+
+Java 是编译型语言，源代码需要先编译成字节码，再由 JVM 执行。
+
+### 编译
+
+```bash
+# 编译单个文件
+javac HelloWorld.java
+
+# 编译后会生成 HelloWorld.class 字节码文件
+```
+
+### 运行
+
+```bash
+# 运行（注意：不需要加 .class 后缀）
+java HelloWorld
+
+# 带包名的类需要使用全限定名
+java dev.s2j.basics.HelloWorld
+
+# 传入命令行参数
+java HelloWorld 参数1 参数2 参数3
+```
+
+### 运行结果
+
+```
+Hello, World!
+欢迎来到 S2J - Sample Java!
+```
+
+如果传入了命令行参数，还会额外输出：
+
+```
+你传入的参数：
+  参数 1: 参数1
+  参数 2: 参数2
+  参数 3: 参数3
+```
+
+## 常见坑点
+
+### 坑点 1：类名与文件名不一致
+
+```
+文件名: HelloWorld.java
+类名: public class Helloworld  // 大小写错误！
+```
+
+这会导致编译错误：`class Helloworld is public, should be declared in a file named Helloworld.java`
+
+### 坑点 2：main 方法签名错误
+
+以下写法都是错误的，JVM 找不到入口方法：
+
+```java
+// 错误：缺少 static
+public void main(String[] args) { }
+
+// 错误：返回值不是 void
+public static int main(String[] args) { return 0; }
+
+// 错误：参数类型不对
+public static void main(String args) { }
+
+// 错误：方法名拼写错误
+public static void Main(String[] args) { }  // 注意大小写
+```
+
+### 坑点 3：包名与目录结构不匹配
+
+如果类声明了 `package dev.s2j.basics`，那么这个文件必须放在 `dev/s2j/basics/` 目录下，否则运行时会报 `NoClassDefFoundError`。
+
+## 最佳实践
+
+1. **始终声明包**：即使是简单的示例程序，也养成声明包的好习惯
+2. **类名见名知意**：使用描述性的类名，而不是 `Test1`、`Demo` 之类
+3. **写好注释**：公共类和方法添加 Javadoc 注释，复杂逻辑添加行内注释
+4. **代码格式化**：保持一致的缩进和空格风格，建议使用 IDE 的自动格式化功能
+5. **一个文件一个类**：除非是内部类，否则不要在一个文件中放多个顶级类
+
+## 小结
+
+通过这个最简单的 Hello World 程序，我们了解了：
+
+- Java 程序的基本结构：包声明 → 类定义 → main 方法
+- 每个修饰符的含义和存在的原因
+- 编译和运行的完整流程
+- 初学者最容易踩的坑
+- 编码的最佳实践
+
+这只是开始。接下来，我们将深入学习 Java 的变量、数据类型、运算符等基础语法。
+
+> **S2J 理念**：每一个知识点都配有完整可运行的代码示例。不要只看，动手敲一遍，你会理解得更深刻。

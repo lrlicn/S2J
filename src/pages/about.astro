@@ -1,0 +1,148 @@
+---
+import Layout from '@layouts/Layout.astro';
+import { categories } from '../config/categories';
+---
+
+<Layout
+  title="关于 S2J | 简单学 Java"
+  description="S2J (Simple to Java) — 以简单易懂的方式学 Java。了解我们的理念、内容规划和技术栈。"
+>
+  <!-- 页面头部 -->
+  <section class="bg-gradient-to-br from-brand-50 via-white to-white dark:from-slate-900 dark:via-slate-900 dark:to-slate-800 py-16 pb-20">
+    <div class="container-page">
+      <nav class="flex items-center gap-2 text-sm text-slate-500 dark:text-slate-400 mb-6">
+        <a href="/" class="hover:text-brand-600 dark:hover:text-brand-400 transition-colors">
+          首页
+        </a>
+        <span>/</span>
+        <span class="text-slate-700 dark:text-slate-300">关于</span>
+      </nav>
+      <div class="flex items-start gap-6">
+        <div class="w-16 h-16 rounded-2xl bg-gradient-to-br from-brand-700 to-brand-500 flex items-center justify-center shadow-lg flex-shrink-0 relative overflow-hidden">
+          <span class="text-white font-extrabold text-3xl leading-none">S</span>
+          <span class="absolute bottom-1.5 right-2 text-white/75 font-bold text-[10px] leading-none">
+            2J
+          </span>
+        </div>
+        <div>
+          <h1 class="text-3xl md:text-4xl font-bold text-slate-900 dark:text-white mb-2">
+            关于 S2J
+          </h1>
+          <p class="text-lg text-slate-600 dark:text-slate-400 max-w-2xl">
+            Simple to Java — 以简单易懂的方式学 Java
+          </p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 理念 -->
+  <section class="py-16">
+    <div class="container-page max-w-3xl">
+      <h2 class="text-2xl font-bold text-slate-900 dark:text-white mb-6">我们的理念</h2>
+      <div class="prose dark:prose-invert max-w-none">
+        <p class="text-lg text-slate-600 dark:text-slate-300 leading-relaxed mb-4">
+          S2J 诞生于一个简单的观察：
+          <strong class="text-slate-800 dark:text-slate-100">
+            很多 Java 学习资料把简单的事情讲复杂了
+          </strong>
+          。
+        </p>
+        <p class="text-slate-600 dark:text-slate-300 leading-relaxed mb-4">
+          晦涩的术语堆砌、冗长的理论铺垫、脱离实际的示例——这些都让初学者望而却步。我们相信，
+          <strong class="text-slate-800 dark:text-slate-100">真正的理解来自简单</strong>
+          ：用最直白的语言讲解概念，用最精简的代码演示原理，用最清晰的结构组织知识。
+        </p>
+        <p class="text-slate-600 dark:text-slate-300 leading-relaxed">
+          S2J 的 <strong class="text-slate-800 dark:text-slate-100">S 代表 Simple（简单）</strong>
+          ，这是我们的初心，也是每一篇文章的标准。如果你觉得某篇文章不够简单，那就是我们还没做好。
+        </p>
+      </div>
+    </div>
+  </section>
+
+  <!-- 内容规划 -->
+  <section class="py-16 bg-slate-50 dark:bg-slate-800/30">
+    <div class="container-page">
+      <div class="text-center max-w-2xl mx-auto mb-12">
+        <h2 class="text-2xl md:text-3xl font-bold text-slate-900 dark:text-white mb-4">学习路线</h2>
+        <p class="text-slate-600 dark:text-slate-400">从入门到进阶，体系化覆盖 Java 技术栈</p>
+      </div>
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 max-w-5xl mx-auto">
+        {categories
+          .filter((c) => c.id !== 'other')
+          .map((cat) => (
+            <div class="card p-6">
+              <div class="flex items-center gap-3 mb-4">
+                <div
+                  class={`w-10 h-10 rounded-xl bg-gradient-to-br ${cat.gradient} flex items-center justify-center flex-shrink-0`}
+                >
+                  <span class="text-white font-bold text-sm">{cat.icon}</span>
+                </div>
+                <h3 class="text-lg font-bold text-slate-900 dark:text-white">{cat.name}</h3>
+              </div>
+              <p class="text-sm text-slate-600 dark:text-slate-400 leading-relaxed">
+                {cat.description}
+              </p>
+            </div>
+          ))}
+      </div>
+    </div>
+  </section>
+
+  <!-- 技术栈 -->
+  <section class="py-16">
+    <div class="container-page max-w-3xl">
+      <h2 class="text-2xl font-bold text-slate-900 dark:text-white mb-6">技术栈</h2>
+      <p class="text-slate-600 dark:text-slate-400 mb-8">
+        S2J 本身也是一个现代化前端技术的实践项目：
+      </p>
+      <div class="grid grid-cols-2 md:grid-cols-3 gap-4">
+        <div class="card p-4 text-center">
+          <div class="text-2xl font-bold text-brand-600 dark:text-brand-400 mb-1">Astro 5</div>
+          <div class="text-xs text-slate-500 dark:text-slate-400">静态站点生成</div>
+        </div>
+        <div class="card p-4 text-center">
+          <div class="text-2xl font-bold text-brand-600 dark:text-brand-400 mb-1">Tailwind CSS</div>
+          <div class="text-xs text-slate-500 dark:text-slate-400">原子化 CSS</div>
+        </div>
+        <div class="card p-4 text-center">
+          <div class="text-2xl font-bold text-brand-600 dark:text-brand-400 mb-1">MDX</div>
+          <div class="text-xs text-slate-500 dark:text-slate-400">Markdown + 组件</div>
+        </div>
+        <div class="card p-4 text-center">
+          <div class="text-2xl font-bold text-brand-600 dark:text-brand-400 mb-1">Shiki</div>
+          <div class="text-xs text-slate-500 dark:text-slate-400">代码语法高亮</div>
+        </div>
+        <div class="card p-4 text-center">
+          <div class="text-2xl font-bold text-brand-600 dark:text-brand-400 mb-1">Fontsource</div>
+          <div class="text-xs text-slate-500 dark:text-slate-400">自托管字体</div>
+        </div>
+        <div class="card p-4 text-center">
+          <div class="text-2xl font-bold text-brand-600 dark:text-brand-400 mb-1">TypeScript</div>
+          <div class="text-xs text-slate-500 dark:text-slate-400">类型安全</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 联系 -->
+  <section class="py-16 bg-slate-50 dark:bg-slate-800/30">
+    <div class="container-page max-w-3xl text-center">
+      <h2 class="text-2xl font-bold text-slate-900 dark:text-white mb-4">联系我们</h2>
+      <p class="text-slate-600 dark:text-slate-400 mb-8 max-w-xl mx-auto">
+        发现错误？有建议？或者想一起完善这个项目？欢迎通过 GitHub 提交 Issue 或 PR。
+      </p>
+      <a href="https://github.com" target="_blank" rel="noopener noreferrer" class="btn-primary">
+        <svg class="w-5 h-5 mr-2" fill="currentColor" viewBox="0 0 24 24">
+          <path
+            fill-rule="evenodd"
+            d="M12 2C6.477 2 2 6.484 2 12.017c0 4.425 2.865 8.18 6.839 9.504.5.092.682-.217.682-.483 0-.237-.008-.868-.013-1.703-2.782.605-3.369-1.343-3.369-1.343-.454-1.158-1.11-1.466-1.11-1.466-.908-.62.069-.608.069-.608 1.003.07 1.531 1.032 1.531 1.032.892 1.53 2.341 1.088 2.91.832.092-.647.35-1.088.636-1.338-2.22-.253-4.555-1.113-4.555-4.951 0-1.093.39-1.988 1.029-2.688-.103-.253-.446-1.272.098-2.65 0 0 .84-.27 2.75 1.026A9.564 9.564 0 0112 6.844c.85.004 1.705.115 2.504.337 1.909-1.296 2.747-1.027 2.747-1.027.546 1.379.202 2.398.1 2.651.64.7 1.028 1.595 1.028 2.688 0 3.848-2.339 4.695-4.566 4.943.359.309.678.92.678 1.855 0 1.338-.012 2.419-.012 2.747 0 .268.18.58.688.482A10.019 10.019 0 0022 12.017C22 6.484 17.522 2 12 2z"
+            clip-rule="evenodd"
+          />
+        </svg>
+        访问 GitHub
+      </a>
+    </div>
+  </section>
+</Layout>

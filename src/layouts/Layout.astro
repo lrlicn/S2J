@@ -1,0 +1,528 @@
+---
+import '@styles/global.css';
+import { getCategoryById } from '../config/categories';
+import Search from '../components/Search.astro';
+
+interface Props {
+  title?: string;
+  description?: string;
+}
+
+const {
+  title = 'S2J - 简单学 Java',
+  description = 'S2J (Simple to Java) — 以简单易懂的方式学 Java，从基础语法到企业级框架，再到 Java AI 应用开发',
+} = Astro.props;
+
+// 当前页面完整 URL，用于 canonical 和 OG
+const canonicalURL = new URL(Astro.url.pathname, Astro.site).toString();
+
+// 主导航显示的分类（从配置中心读取名称，避免硬编码）
+const navCategoryIds = ['java-basics', 'spring', 'java-ai'];
+const navCategories = navCategoryIds
+  .map((id) => getCategoryById(id))
+  .filter((c): c is NonNullable<typeof c> => c !== undefined);
+
+// 判断导航链接是否为当前页面（用于 active 高亮）
+function isNavActive(path: string): boolean {
+  const current = Astro.url.pathname.replace(/\/+$/, '') || '/';
+  const target = path.replace(/\/+$/, '') || '/';
+  if (target === '/docs') {
+    return current === '/docs';
+  }
+  return current.startsWith(target);
+}
+---
+
+<!doctype html>
+<html lang="zh-CN" class="scroll-smooth">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="description" content={description} />
+    <meta name="generator" content={Astro.generator} />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <link rel="canonical" href={canonicalURL} />
+    <title>{title}</title>
+
+    <!-- Open Graph -->
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content="S2J - 简单学 Java" />
+    <meta property="og:title" content={title} />
+    <meta property="og:description" content={description} />
+    <meta property="og:url" content={canonicalURL} />
+    <meta property="og:image" content="/favicon.svg" />
+    <meta property="og:locale" content="zh_CN" />
+
+    <!-- Twitter Card -->
+    <meta name="twitter:card" content="summary" />
+    <meta name="twitter:title" content={title} />
+    <meta name="twitter:description" content={description} />
+    <meta name="twitter:image" content="/favicon.svg" />
+
+    <!-- 暗色模式初始化脚本，防止闪烁 -->
+    <script is:inline>
+      (function () {
+        const theme = localStorage.getItem('theme');
+        if (
+          theme === 'dark' ||
+          (!theme && window.matchMedia('(prefers-color-scheme: dark)').matches)
+        ) {
+          document.documentElement.classList.add('dark');
+        }
+      })();
+    </script>
+  </head>
+  <body class="min-h-screen flex flex-col">
+    <!-- 阅读进度条 -->
+    <div
+      id="reading-progress"
+      class="fixed top-0 left-0 h-[3px] bg-gradient-to-r from-brand-500 to-brand-700 z-[60] transition-[width] duration-150 ease-out"
+      style="width: 0%"
+    ></div>
+
+    <!-- 顶部导航 -->
+    <header class="sticky top-0 z-50 bg-gradient-to-b from-white/95 via-white/85 to-slate-50/50 dark:from-slate-900/95 dark:via-slate-900/85 dark:to-slate-800/50 backdrop-blur-md border-b border-slate-200/40 dark:border-slate-700/40">
+      <nav class="container-page flex items-center justify-between h-16">
+        <!-- Logo -->
+        <a href="/" class="flex items-center gap-2.5 group">
+          <img src="/favicon.svg" alt="S2J" class="w-10 h-10 rounded-xl shadow-md group-hover:shadow-lg group-hover:scale-105 transition-all" />
+          <span class="font-extrabold text-xl text-slate-900 dark:text-white leading-tight tracking-tight">
+            S2J
+          </span>
+        </a>
+
+        <!-- 导航链接 -->
+        <div class="hidden md:flex items-center gap-8">
+          <a href="/docs" class={`nav-link ${isNavActive('/docs') ? 'active' : ''}`}>
+            文档
+          </a>
+          {navCategories.map((cat) => (
+            <a href={`/docs/${cat.id}`} class={`nav-link ${isNavActive(`/docs/${cat.id}`) ? 'active' : ''}`}>
+              {cat.name}
+            </a>
+          ))}
+          <a href="/about" class={`nav-link ${isNavActive('/about') ? 'active' : ''}`}>
+            关于
+          </a>
+        </div>
+
+        <!-- 右侧操作 -->
+        <div class="flex items-center gap-3">
+          <!-- 全站搜索 -->
+          <Search />
+
+          <!-- 暗色模式切换 -->
+          <button
+            id="theme-toggle"
+            class="p-2 rounded-lg text-slate-500 hover:text-brand-600 dark:text-slate-400 dark:hover:text-brand-400 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
+            aria-label="切换主题"
+          >
+            <svg
+              class="w-5 h-5 hidden dark:block"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"
+              />
+            </svg>
+            <svg
+              class="w-5 h-5 block dark:hidden"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"
+              />
+            </svg>
+          </button>
+
+          <!-- GitHub 链接 -->
+          <a
+            href="https://github.com"
+            target="_blank"
+            rel="noopener noreferrer"
+            class="p-2 rounded-lg text-slate-500 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
+            aria-label="GitHub"
+          >
+            <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
+              <path
+                fill-rule="evenodd"
+                d="M12 2C6.477 2 2 6.484 2 12.017c0 4.425 2.865 8.18 6.839 9.504.5.092.682-.217.682-.483 0-.237-.008-.868-.013-1.703-2.782.605-3.369-1.343-3.369-1.343-.454-1.158-1.11-1.466-1.11-1.466-.908-.62.069-.608.069-.608 1.003.07 1.531 1.032 1.531 1.032.892 1.53 2.341 1.088 2.91.832.092-.647.35-1.088.636-1.338-2.22-.253-4.555-1.113-4.555-4.951 0-1.093.39-1.988 1.029-2.688-.103-.253-.446-1.272.098-2.65 0 0 .84-.27 2.75 1.026A9.564 9.564 0 0112 6.844c.85.004 1.705.115 2.504.337 1.909-1.296 2.747-1.027 2.747-1.027.546 1.379.202 2.398.1 2.651.64.7 1.028 1.595 1.028 2.688 0 3.848-2.339 4.695-4.566 4.943.359.309.678.92.678 1.855 0 1.338-.012 2.419-.012 2.747 0 .268.18.58.688.482A10.019 10.019 0 0022 12.017C22 6.484 17.522 2 12 2z"
+                clip-rule="evenodd"
+              />
+            </svg>
+          </a>
+
+          <!-- 移动端菜单按钮 -->
+          <button
+            id="mobile-menu-toggle"
+            class="md:hidden p-2 rounded-lg text-slate-500 hover:text-brand-600 dark:text-slate-400 dark:hover:text-brand-400 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
+            aria-label="打开菜单"
+          >
+            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M4 6h16M4 12h16M4 18h16"
+              />
+            </svg>
+          </button>
+        </div>
+      </nav>
+    </header>
+
+    <!-- 主内容 -->
+    <main class="flex-1">
+      <slot />
+    </main>
+
+    <!-- 页脚 -->
+    <footer class="bg-gradient-to-b from-brand-50/60 via-slate-50 to-white dark:from-slate-900 dark:via-slate-900/80 dark:to-slate-900/50 border-t border-slate-200/60 dark:border-slate-700/50">
+      <div class="container-page py-10">
+        <div class="grid grid-cols-1 md:grid-cols-4 gap-8">
+          <!-- 品牌信息 -->
+          <div class="md:col-span-2">
+            <div class="flex items-center gap-2.5 mb-3">
+              <img src="/favicon.svg" alt="S2J" class="w-9 h-9 rounded-lg" />
+              <span class="font-bold text-lg text-slate-900 dark:text-white">S2J</span>
+            </div>
+            <p class="text-slate-500 dark:text-slate-400 text-sm">
+              简单学 Java
+            </p>
+          </div>
+
+          <!-- 快速链接 -->
+          <div>
+            <h4 class="font-semibold text-slate-900 dark:text-white mb-3 text-sm">学习路线</h4>
+            <ul class="space-y-2 text-sm">
+              <li>
+                <a
+                  href="/docs/java-basics"
+                  class="text-slate-600 dark:text-slate-400 hover:text-brand-600 dark:hover:text-brand-400 transition-colors"
+                >
+                  Java 基础
+                </a>
+              </li>
+              <li>
+                <a
+                  href="/docs/spring"
+                  class="text-slate-600 dark:text-slate-400 hover:text-brand-600 dark:hover:text-brand-400 transition-colors"
+                >
+                  Spring 生态
+                </a>
+              </li>
+              <li>
+                <a
+                  href="/docs/java-ai"
+                  class="text-slate-600 dark:text-slate-400 hover:text-brand-600 dark:hover:text-brand-400 transition-colors"
+                >
+                  Java AI
+                </a>
+              </li>
+              <li>
+                <a
+                  href="/docs"
+                  class="text-slate-600 dark:text-slate-400 hover:text-brand-600 dark:hover:text-brand-400 transition-colors"
+                >
+                  全部文档
+                </a>
+              </li>
+            </ul>
+          </div>
+
+          <!-- 关于 -->
+          <div>
+            <h4 class="font-semibold text-slate-900 dark:text-white mb-3 text-sm">关于</h4>
+            <ul class="space-y-2 text-sm">
+              <li>
+                <a
+                  href="/about"
+                  class="text-slate-600 dark:text-slate-400 hover:text-brand-600 dark:hover:text-brand-400 transition-colors"
+                >
+                  关于本站
+                </a>
+              </li>
+              <li>
+                <a
+                  href="https://github.com"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  class="text-slate-600 dark:text-slate-400 hover:text-brand-600 dark:hover:text-brand-400 transition-colors"
+                >
+                  GitHub
+                </a>
+              </li>
+            </ul>
+          </div>
+        </div>
+
+        <div class="mt-8 text-center">
+          <p class="text-sm text-slate-400 dark:text-slate-500">
+            &copy; {new Date().getFullYear()} S2J. 简单学 Java.
+          </p>
+        </div>
+      </div>
+    </footer>
+
+    <!-- 移动端抽屉菜单遮罩 -->
+    <div
+      id="mobile-menu-overlay"
+      class="fixed inset-0 bg-black/50 z-40 hidden opacity-0 transition-opacity duration-300"
+    ></div>
+
+    <!-- 移动端抽屉菜单 -->
+    <aside
+      id="mobile-menu"
+      class="fixed top-0 right-0 h-full w-72 max-w-[85vw] bg-white dark:bg-slate-900 z-50 shadow-2xl transform translate-x-full transition-transform duration-300 ease-in-out"
+    >
+      <div class="flex flex-col h-full">
+        <!-- 抽屉头部 -->
+        <div class="flex items-center justify-between p-4 border-b border-slate-200 dark:border-slate-700">
+          <span class="font-bold text-lg text-slate-900 dark:text-white">菜单</span>
+          <button
+            id="mobile-menu-close"
+            class="p-2 rounded-lg text-slate-500 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
+            aria-label="关闭菜单"
+          >
+            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M6 18L18 6M6 6l12 12"
+              />
+            </svg>
+          </button>
+        </div>
+
+        <!-- 导航链接 -->
+        <nav class="flex-1 overflow-y-auto p-4 space-y-1">
+          <a
+            href="/docs"
+            class={`mobile-nav-link block px-4 py-3 rounded-lg font-medium transition-colors ${isNavActive('/docs') ? 'bg-brand-50 dark:bg-brand-900/30 text-brand-600 dark:text-brand-400' : 'text-slate-700 dark:text-slate-200 hover:bg-brand-50 dark:hover:bg-brand-900/30 hover:text-brand-600 dark:hover:text-brand-400'}`}
+          >
+            全部文档
+          </a>
+          {navCategories.map((cat) => (
+            <a
+              href={`/docs/${cat.id}`}
+              class={`mobile-nav-link block px-4 py-3 rounded-lg font-medium transition-colors ${isNavActive(`/docs/${cat.id}`) ? 'bg-brand-50 dark:bg-brand-900/30 text-brand-600 dark:text-brand-400' : 'text-slate-700 dark:text-slate-200 hover:bg-brand-50 dark:hover:bg-brand-900/30 hover:text-brand-600 dark:hover:text-brand-400'}`}
+            >
+              {cat.name}
+            </a>
+          ))}
+          <a
+            href="/about"
+            class={`mobile-nav-link block px-4 py-3 rounded-lg font-medium transition-colors ${isNavActive('/about') ? 'bg-brand-50 dark:bg-brand-900/30 text-brand-600 dark:text-brand-400' : 'text-slate-700 dark:text-slate-200 hover:bg-brand-50 dark:hover:bg-brand-900/30 hover:text-brand-600 dark:hover:text-brand-400'}`}
+          >
+            关于
+          </a>
+        </nav>
+
+        <!-- 抽屉底部操作 -->
+        <div class="p-4 border-t border-slate-200 dark:border-slate-700 space-y-3">
+          <button
+            id="mobile-theme-toggle"
+            class="w-full flex items-center justify-center gap-2 px-4 py-3 rounded-lg bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-200 hover:bg-slate-200 dark:hover:bg-slate-700 font-medium transition-colors"
+          >
+            <svg
+              class="w-5 h-5 hidden dark:block"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"
+              />
+            </svg>
+            <svg
+              class="w-5 h-5 block dark:hidden"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"
+              />
+            </svg>
+            <span class="dark:hidden">切换暗色模式</span>
+            <span class="hidden dark:inline">切换亮色模式</span>
+          </button>
+          <a
+            href="https://github.com"
+            target="_blank"
+            rel="noopener noreferrer"
+            class="w-full flex items-center justify-center gap-2 px-4 py-3 rounded-lg border border-slate-300 dark:border-slate-600 text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-800 font-medium transition-colors"
+          >
+            <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
+              <path
+                fill-rule="evenodd"
+                d="M12 2C6.477 2 2 6.484 2 12.017c0 4.425 2.865 8.18 6.839 9.504.5.092.682-.217.682-.483 0-.237-.008-.868-.013-1.703-2.782.605-3.369-1.343-3.369-1.343-.454-1.158-1.11-1.466-1.11-1.466-.908-.62.069-.608.069-.608 1.003.07 1.531 1.032 1.531 1.032.892 1.53 2.341 1.088 2.91.832.092-.647.35-1.088.636-1.338-2.22-.253-4.555-1.113-4.555-4.951 0-1.093.39-1.988 1.029-2.688-.103-.253-.446-1.272.098-2.65 0 0 .84-.27 2.75 1.026A9.564 9.564 0 0112 6.844c.85.004 1.705.115 2.504.337 1.909-1.296 2.747-1.027 2.747-1.027.546 1.379.202 2.398.1 2.651.64.7 1.028 1.595 1.028 2.688 0 3.848-2.339 4.695-4.566 4.943.359.309.678.92.678 1.855 0 1.338-.012 2.419-.012 2.747 0 .268.18.58.688.482A10.019 10.019 0 0022 12.017C22 6.484 17.522 2 12 2z"
+                clip-rule="evenodd"
+              />
+            </svg>
+            GitHub
+          </a>
+        </div>
+      </div>
+    </aside>
+
+    <!-- 暗色模式切换 + 移动端菜单脚本 -->
+    <script>
+      // 暗色模式切换
+      const toggleTheme = () => {
+        const isDark = document.documentElement.classList.toggle('dark');
+        localStorage.setItem('theme', isDark ? 'dark' : 'light');
+      };
+      document.getElementById('theme-toggle')?.addEventListener('click', toggleTheme);
+      document.getElementById('mobile-theme-toggle')?.addEventListener('click', toggleTheme);
+
+      // 移动端抽屉菜单
+      const mobileMenu = document.getElementById('mobile-menu');
+      const mobileOverlay = document.getElementById('mobile-menu-overlay');
+      const openMobileMenu = () => {
+        mobileMenu?.classList.remove('translate-x-full');
+        mobileOverlay?.classList.remove('hidden');
+        requestAnimationFrame(() => mobileOverlay?.classList.remove('opacity-0'));
+        document.body.style.overflow = 'hidden';
+      };
+      const closeMobileMenu = () => {
+        mobileMenu?.classList.add('translate-x-full');
+        mobileOverlay?.classList.add('opacity-0');
+        setTimeout(() => mobileOverlay?.classList.add('hidden'), 300);
+        document.body.style.overflow = '';
+      };
+      document.getElementById('mobile-menu-toggle')?.addEventListener('click', openMobileMenu);
+      document.getElementById('mobile-menu-close')?.addEventListener('click', closeMobileMenu);
+      mobileOverlay?.addEventListener('click', closeMobileMenu);
+      // 点击导航链接后自动关闭菜单
+      document.querySelectorAll('.mobile-nav-link').forEach((link) => {
+        link.addEventListener('click', closeMobileMenu);
+      });
+      // ESC 键关闭菜单
+      document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape') closeMobileMenu();
+      });
+
+      // 代码块：复制按钮 + 语言标识
+      const copyIcon =
+        '<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"/></svg>';
+      const checkIcon =
+        '<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>';
+
+      document.querySelectorAll('pre').forEach((pre) => {
+        if (pre.querySelector('.copy-btn')) return;
+
+        const code = pre.querySelector('code');
+        const langMatch = code?.className.match(/language-(\w+)/);
+        const lang = langMatch ? langMatch[1].toUpperCase() : '';
+
+        // 行号
+        if (code) {
+          const lineCount = code.textContent.split('\n').length;
+          const lineNumbers = document.createElement('div');
+          lineNumbers.className = 'code-line-numbers';
+          lineNumbers.setAttribute('aria-hidden', 'true');
+          lineNumbers.innerHTML = Array.from(
+            { length: lineCount },
+            (_, i) => `<span>${i + 1}</span>`
+          ).join('');
+          pre.insertBefore(lineNumbers, code);
+          pre.classList.add('has-line-numbers');
+        }
+
+        // 语言标识
+        if (lang && lang !== 'PLAINTEXT') {
+          const langLabel = document.createElement('span');
+          langLabel.className = 'code-lang';
+          langLabel.textContent = lang;
+          pre.appendChild(langLabel);
+        }
+
+        // 复制按钮
+        const btn = document.createElement('button');
+        btn.className = 'copy-btn';
+        btn.innerHTML = copyIcon;
+        btn.setAttribute('aria-label', '复制代码');
+        btn.addEventListener('click', async () => {
+          const text = code?.innerText || pre.innerText;
+          try {
+            await navigator.clipboard.writeText(text);
+          } catch {
+            const ta = document.createElement('textarea');
+            ta.value = text;
+            ta.style.position = 'fixed';
+            ta.style.opacity = '0';
+            document.body.appendChild(ta);
+            ta.select();
+            document.execCommand('copy');
+            document.body.removeChild(ta);
+          }
+          btn.classList.add('copied');
+          btn.innerHTML = checkIcon;
+          setTimeout(() => {
+            btn.classList.remove('copied');
+            btn.innerHTML = copyIcon;
+          }, 2000);
+        });
+        pre.appendChild(btn);
+      });
+
+      // 阅读进度条 + 返回顶部按钮
+      const progressBar = document.getElementById('reading-progress');
+      const backToTop = document.getElementById('back-to-top');
+
+      const updateScrollUI = () => {
+        const scrollTop = window.scrollY;
+        const docHeight = document.documentElement.scrollHeight - window.innerHeight;
+        const progress = docHeight > 0 ? Math.min((scrollTop / docHeight) * 100, 100) : 0;
+        if (progressBar) progressBar.style.width = `${progress}%`;
+        if (backToTop) {
+          if (scrollTop > 500) {
+            backToTop.classList.remove('opacity-0', 'pointer-events-none');
+          } else {
+            backToTop.classList.add('opacity-0', 'pointer-events-none');
+          }
+        }
+      };
+
+      window.addEventListener('scroll', updateScrollUI, { passive: true });
+      updateScrollUI();
+
+      backToTop?.addEventListener('click', () => {
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+      });
+    </script>
+    <!-- 返回顶部按钮 -->
+    <button
+      id="back-to-top"
+      class="fixed bottom-6 right-6 z-40 p-3 rounded-full bg-white dark:bg-slate-800 shadow-lg border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 hover:text-brand-600 dark:hover:text-brand-400 hover:shadow-xl hover:scale-110 transition-all duration-200 opacity-0 pointer-events-none"
+      aria-label="返回顶部"
+    >
+      <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path
+          stroke-linecap="round"
+          stroke-linejoin="round"
+          stroke-width="2"
+          d="M5 10l7-7m0 0l7 7m-7-7v18"
+        />
+      </svg>
+    </button>
+  </body>
+</html>

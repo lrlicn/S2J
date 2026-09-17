@@ -1,0 +1,49 @@
+---
+import Layout from '@layouts/Layout.astro';
+---
+
+<Layout title="页面未找到 | S2J" description="您访问的页面不存在">
+  <div class="min-h-[60vh] flex items-center justify-center py-20">
+    <div class="text-center max-w-md mx-auto px-4">
+      <!-- 404 数字 -->
+      <div class="mb-8">
+        <span class="text-8xl md:text-9xl font-extrabold bg-gradient-to-r from-brand-500 to-brand-800 bg-clip-text text-transparent">
+          404
+        </span>
+      </div>
+
+      <h1 class="text-2xl md:text-3xl font-bold text-slate-900 dark:text-white mb-4">
+        页面走丢了
+      </h1>
+      <p class="text-slate-600 dark:text-slate-400 mb-8 leading-relaxed">
+        您访问的页面不存在或已被移动。别担心，让我们带您回到正确的地方。
+      </p>
+
+      <div class="flex flex-col sm:flex-row gap-4 justify-center">
+        <a href="/" class="btn-primary">
+          <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
+          </svg>
+          返回首页
+        </a>
+        <a href="/docs" class="btn-secondary">
+          <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
+          </svg>
+          浏览文档
+        </a>
+      </div>
+
+      <!-- 快速链接 -->
+      <div class="mt-12 pt-8 border-t border-slate-200 dark:border-slate-700">
+        <p class="text-sm text-slate-500 dark:text-slate-400 mb-4">或者直接访问：</p>
+        <div class="flex flex-wrap justify-center gap-x-6 gap-y-2 text-sm">
+          <a href="/docs/java-basics" class="text-brand-600 dark:text-brand-400 hover:underline">Java 基础</a>
+          <a href="/docs/spring" class="text-brand-600 dark:text-brand-400 hover:underline">Spring 生态</a>
+          <a href="/docs/java-ai" class="text-brand-600 dark:text-brand-400 hover:underline">Java AI</a>
+          <a href="/about" class="text-brand-600 dark:text-brand-400 hover:underline">关于 S2J</a>
+        </div>
+      </div>
+    </div>
+  </div>
+</Layout>

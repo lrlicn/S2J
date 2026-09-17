@@ -1,0 +1,396 @@
+---
+import { getCollection, type CollectionEntry } from 'astro:content';
+import Layout from '@layouts/Layout.astro';
+import { categoryNames } from '../../config/categories';
+
+// 生成静态路径
+export async function getStaticPaths() {
+  const allDocs = (await getCollection('docs', ({ data }) => !data.draft && data.published)).sort(
+    (a, b) => a.data.order - b.data.order
+  );
+  return allDocs.map((doc) => {
+    // 计算字数和阅读时间（中文字符 + 英文单词，按 400 字/分钟估算）
+    const body = doc.body || '';
+    const chineseChars = (body.match(/[\u4e00-\u9fa5]/g) || []).length;
+    const englishWords = (body.match(/[a-zA-Z]+/g) || []).length;
+    const wordCount = chineseChars + englishWords;
+    const readingTime = Math.max(1, Math.ceil(wordCount / 400));
+    return {
+      params: { slug: doc.id.replace(/\.mdx?$/, '') },
+      props: { doc, allDocs, wordCount, readingTime },
+    };
+  });
+}
+
+const { doc, allDocs, wordCount, readingTime } = Astro.props;
+const { Content, headings } = await doc.render();
+
+// 过滤出 h2 和 h3 用于目录展示（构建时生成，SEO 友好且无闪烁）
+const tocHeadings = headings.filter((h) => h.depth === 2 || h.depth === 3);
+
+// 计算同分类内的上一篇/下一篇（避免跨分类跳转）
+const sameCategoryDocs = allDocs.filter((d) => d.data.category === doc.data.category);
+const currentIndex = sameCategoryDocs.findIndex((d) => d.id === doc.id);
+const prevDoc = currentIndex > 0 ? sameCategoryDocs[currentIndex - 1] : null;
+const nextDoc = currentIndex < sameCategoryDocs.length - 1 ? sameCategoryDocs[currentIndex + 1] : null;
+
+// 按分类分组，用于侧边栏
+const docsByCategory = allDocs.reduce((acc, d) => {
+  const cat = d.data.category;
+  if (!acc[cat]) acc[cat] = [];
+  acc[cat].push(d);
+  return acc;
+}, {} as Record<string, CollectionEntry<'docs'>[]>);
+---
+
+<Layout title={`${doc.data.title} | S2J`} description={doc.data.description}>
+  <div class="flex">
+    <!-- 侧边栏：全宽贴左，sticky 固定 -->
+    <aside class="hidden lg:block w-64 flex-shrink-0 bg-slate-50/60 dark:bg-slate-900/40">
+      <div class="sticky top-16 h-[calc(100vh-4rem)] overflow-y-auto px-6 py-8">
+        <nav class="space-y-1">
+            {
+              Object.entries(docsByCategory).map(([category, docs]) => {
+                const isCurrentCategory = category === doc.data.category;
+                return (
+                  <div class="sidebar-group">
+                    <button
+                      type="button"
+                      class="sidebar-toggle w-full flex items-center justify-between px-3 py-2 text-xs font-semibold text-slate-400 dark:text-slate-500 uppercase tracking-wider hover:text-slate-600 dark:hover:text-slate-300 transition-colors rounded-lg"
+                    >
+                      <span>{categoryNames[category] || category}</span>
+                      <svg class="w-4 h-4 transition-transform duration-200 sidebar-arrow" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+                      </svg>
+                    </button>
+                    <ul
+                      class="sidebar-list space-y-1 mt-1"
+                      style={isCurrentCategory ? '' : 'display: none;'}
+                    >
+                      {docs.map((d) => {
+                        const isActive = d.id === doc.id;
+                        return (
+                          <li>
+                            <a
+                              href={`/docs/${d.id.replace(/\.mdx?$/, '')}`}
+                              title={d.data.title}
+                              class:list={[
+                                'block px-3 py-2 rounded-lg text-sm transition-colors truncate',
+                                isActive
+                                  ? 'bg-brand-50 dark:bg-brand-900/30 text-brand-700 dark:text-brand-300 font-medium'
+                                  : 'text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 hover:text-slate-900 dark:hover:text-white',
+                              ]}
+                            >
+                              {d.data.title}
+                            </a>
+                          </li>
+                        );
+                      })}
+                    </ul>
+                  </div>
+                );
+              })
+            }
+          </nav>
+        </div>
+      </aside>
+
+    <!-- 主内容区：剩余空间居中，最佳阅读宽度 -->
+    <main class="flex-1 min-w-0">
+      <div class="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 py-8 lg:py-12" data-pagefind-body>
+        <!-- 面包屑 -->
+        <nav class="flex items-center gap-2 text-sm text-slate-500 dark:text-slate-400 mb-6">
+          <a href="/" class="hover:text-brand-600 dark:hover:text-brand-400 transition-colors">首页</a>
+          <span>/</span>
+          <a href="/docs" class="hover:text-brand-600 dark:hover:text-brand-400 transition-colors">文档</a>
+          <span>/</span>
+          <span class="text-slate-700 dark:text-slate-300">{doc.data.title}</span>
+        </nav>
+
+        <!-- 文章头部 -->
+        <header class="mb-8 pb-8 border-b border-slate-200 dark:border-slate-700">
+          <div class="flex items-center gap-3 mb-4">
+            <span class="tag">{categoryNames[doc.data.category] || doc.data.category}</span>
+            {doc.data.featured && (
+              <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-accent-100 text-accent-800 dark:bg-accent-900/40 dark:text-accent-300">
+                精选
+              </span>
+            )}
+          </div>
+          <div class="mb-4">
+            <h1 style="display: inline-block; border-radius: 9999px;" class="text-2xl md:text-3xl font-bold text-slate-900 dark:text-white leading-tight px-6 py-2.5 bg-brand-50 dark:bg-brand-900/30">
+              {doc.data.title}
+            </h1>
+          </div>
+          <p class="text-lg text-slate-600 dark:text-slate-400 leading-relaxed mb-6">
+            {doc.data.description}
+          </p>
+          <div class="flex flex-wrap items-center gap-4 text-sm text-slate-500 dark:text-slate-400">
+            <span class="flex items-center gap-1.5">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+              </svg>
+              {doc.data.author}
+            </span>
+            {doc.data.pubDate && (
+              <span class="flex items-center gap-1.5">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                </svg>
+                {doc.data.pubDate.toLocaleDateString('zh-CN')}
+              </span>
+            )}
+            <!-- 阅读时间 -->
+            <span class="flex items-center gap-1.5">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+              </svg>
+              {readingTime} 分钟
+            </span>
+            <!-- 字数 -->
+            <span class="flex items-center gap-1.5">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+              </svg>
+              {wordCount.toLocaleString()} 字
+            </span>
+            {doc.data.tags.length > 0 && (
+              <span class="flex items-center gap-1.5 flex-wrap">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z" />
+                </svg>
+                {doc.data.tags.map((tag) => (
+                  <span class="px-2 py-0.5 bg-slate-100 dark:bg-slate-800 rounded text-xs">{tag}</span>
+                ))}
+              </span>
+            )}
+          </div>
+        </header>
+
+        <!-- 文章内容 -->
+        <div class="prose prose-slate dark:prose-invert max-w-none prose-headings:scroll-mt-24 prose-a:text-brand-600 dark:prose-a:text-brand-400 prose-pre:bg-code-bg prose-pre:border prose-pre:border-code-border">
+          <Content />
+        </div>
+
+        <!-- 上一篇/下一篇 -->
+        <nav class="mt-16 pt-8 border-t border-slate-200 dark:border-slate-700">
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            {prevDoc ? (
+              <a
+                href={`/docs/${prevDoc.id.replace(/\.mdx?$/, '')}`}
+                class="group card p-5 hover:border-brand-400 dark:hover:border-brand-600 hover:shadow-md transition-all"
+              >
+                <div class="flex items-center gap-2 text-xs text-slate-500 dark:text-slate-400 mb-2">
+                  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
+                  </svg>
+                  <span>上一篇</span>
+                  <span class="ml-auto inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-medium bg-brand-100 text-brand-800 dark:bg-brand-900/40 dark:text-brand-300">
+                    {categoryNames[prevDoc.data.category] || prevDoc.data.category}
+                  </span>
+                </div>
+                <div class="font-semibold text-slate-900 dark:text-white group-hover:text-brand-600 dark:group-hover:text-brand-400 transition-colors line-clamp-1 mb-1">
+                  {prevDoc.data.title}
+                </div>
+                {prevDoc.data.description && prevDoc.data.description !== prevDoc.data.title && (
+                  <div class="text-sm text-slate-500 dark:text-slate-400 line-clamp-1">
+                    {prevDoc.data.description}
+                  </div>
+                )}
+              </a>
+            ) : (
+              <div class="card p-5 opacity-40 flex items-center justify-center text-sm text-slate-400 dark:text-slate-500">
+                已是第一篇
+              </div>
+            )}
+            {nextDoc ? (
+              <a
+                href={`/docs/${nextDoc.id.replace(/\.mdx?$/, '')}`}
+                class="group card p-5 hover:border-brand-400 dark:hover:border-brand-600 hover:shadow-md transition-all text-right"
+              >
+                <div class="flex items-center gap-2 text-xs text-slate-500 dark:text-slate-400 mb-2">
+                  <span class="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-medium bg-brand-100 text-brand-800 dark:bg-brand-900/40 dark:text-brand-300">
+                    {categoryNames[nextDoc.data.category] || nextDoc.data.category}
+                  </span>
+                  <span class="ml-auto">下一篇</span>
+                  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+                  </svg>
+                </div>
+                <div class="font-semibold text-slate-900 dark:text-white group-hover:text-brand-600 dark:group-hover:text-brand-400 transition-colors line-clamp-1 mb-1">
+                  {nextDoc.data.title}
+                </div>
+                {nextDoc.data.description && nextDoc.data.description !== nextDoc.data.title && (
+                  <div class="text-sm text-slate-500 dark:text-slate-400 line-clamp-1">
+                    {nextDoc.data.description}
+                  </div>
+                )}
+              </a>
+            ) : (
+              <div class="card p-5 opacity-40 flex items-center justify-center text-sm text-slate-400 dark:text-slate-500">
+                已是最后一篇
+              </div>
+            )}
+          </div>
+        </nav>
+      </div>
+    </main>
+  </div>
+
+  <!-- 悬浮目录按钮 -->
+  <button
+    id="toc-fab"
+    class="fixed right-4 top-1/2 -translate-y-1/2 z-40 p-3 rounded-full bg-white dark:bg-slate-800 shadow-lg border border-slate-200 dark:border-slate-700 hover:shadow-xl hover:scale-110 transition-all group"
+    aria-label="打开目录"
+  >
+    <svg class="w-5 h-5 text-slate-600 dark:text-slate-300 group-hover:text-brand-600 dark:group-hover:text-brand-400 transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h7" />
+    </svg>
+  </button>
+
+  <!-- 目录遮罩 -->
+  <div id="toc-overlay" class="fixed inset-0 bg-black/40 z-40 hidden opacity-0 transition-opacity duration-300"></div>
+
+  <!-- 目录面板 -->
+  <aside id="toc-panel" class="fixed top-0 right-0 h-full w-80 max-w-[85vw] bg-white dark:bg-slate-900 z-50 shadow-2xl transform translate-x-full transition-transform duration-300 ease-in-out">
+    <div class="flex flex-col h-full">
+      <!-- 面板头部 -->
+      <div class="flex items-center justify-between p-4 border-b border-slate-200 dark:border-slate-700">
+        <div class="flex items-center gap-2">
+          <svg class="w-5 h-5 text-brand-600 dark:text-brand-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h7" />
+          </svg>
+          <h3 class="font-bold text-slate-900 dark:text-white">本页目录</h3>
+        </div>
+        <button id="toc-close" class="p-2 rounded-lg text-slate-500 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors" aria-label="关闭目录">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+          </svg>
+        </button>
+      </div>
+
+      <!-- 目录内容 -->
+      <nav id="toc-nav" class="flex-1 overflow-y-auto p-4 space-y-1">
+        {tocHeadings.length > 0 ? (
+          tocHeadings.map((heading) => (
+            <a
+              href={`#${heading.slug}`}
+              data-slug={heading.slug}
+              class:list={[
+                'toc-link block py-2 px-3 rounded-lg text-sm transition-all border-l-2 border-transparent',
+                heading.depth === 2
+                  ? 'font-medium text-slate-700 dark:text-slate-200 hover:bg-brand-50 dark:hover:bg-brand-900/20 hover:text-brand-700 dark:hover:text-brand-300'
+                  : 'pl-7 text-slate-500 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800 hover:text-brand-600 dark:hover:text-brand-400',
+              ]}
+            >
+              {heading.text}
+            </a>
+          ))
+        ) : (
+          <p class="text-sm text-slate-400 dark:text-slate-500 px-3">暂无目录</p>
+        )}
+      </nav>
+
+      <!-- 面板底部提示 -->
+      <div class="p-4 border-t border-slate-200 dark:border-slate-700">
+        <p class="text-xs text-slate-400 dark:text-slate-500 text-center">点击目录项快速跳转 · ESC 关闭</p>
+      </div>
+    </div>
+  </aside>
+
+  <!-- 目录交互脚本：打开/关闭 + 滚动定位高亮 -->
+  <script>
+    const tocFab = document.getElementById('toc-fab');
+    const tocPanel = document.getElementById('toc-panel');
+    const tocOverlay = document.getElementById('toc-overlay');
+    const tocClose = document.getElementById('toc-close');
+    const tocLinks = document.querySelectorAll('.toc-link');
+
+    const openToc = () => {
+      tocPanel?.classList.remove('translate-x-full');
+      tocOverlay?.classList.remove('hidden');
+      requestAnimationFrame(() => tocOverlay?.classList.remove('opacity-0'));
+      document.body.style.overflow = 'hidden';
+    };
+    const closeToc = () => {
+      tocPanel?.classList.add('translate-x-full');
+      tocOverlay?.classList.add('opacity-0');
+      setTimeout(() => tocOverlay?.classList.add('hidden'), 300);
+      document.body.style.overflow = '';
+    };
+
+    tocFab?.addEventListener('click', openToc);
+    tocClose?.addEventListener('click', closeToc);
+    tocOverlay?.addEventListener('click', closeToc);
+    document.addEventListener('keydown', (e) => { if (e.key === 'Escape') closeToc(); });
+
+    // 点击目录项：平滑滚动到对应标题，然后关闭面板
+    tocLinks.forEach((link) => {
+      link.addEventListener('click', (e) => {
+        e.preventDefault();
+        const slug = link.dataset.slug;
+        const target = document.getElementById(slug);
+        if (target) {
+          // 计算目标位置，减去 sticky header 高度（约 64px）+ 额外间距
+          const headerOffset = 80;
+          const elementPosition = target.getBoundingClientRect().top;
+          const offsetPosition = elementPosition + window.pageYOffset - headerOffset;
+          window.scrollTo({ top: offsetPosition, behavior: 'smooth' });
+        }
+        setTimeout(closeToc, 100);
+      });
+    });
+
+    // 滚动定位高亮：IntersectionObserver 监听标题可见性
+    const headings = document.querySelectorAll('.prose h2[id], .prose h3[id]');
+    if (headings.length > 0 && tocLinks.length > 0) {
+      const setActiveToc = (slug) => {
+        tocLinks.forEach((link) => {
+          const isActive = link.dataset.slug === slug;
+          link.classList.toggle('bg-brand-50', isActive);
+          link.classList.toggle('dark:bg-brand-900/20', isActive);
+          link.classList.toggle('text-brand-700', isActive);
+          link.classList.toggle('dark:text-brand-300', isActive);
+          link.classList.toggle('border-brand-500', isActive);
+          link.classList.toggle('font-semibold', isActive);
+        });
+      };
+
+      const observer = new IntersectionObserver(
+        (entries) => {
+          // 找到最靠近视口顶部的可见标题
+          const visible = entries
+            .filter((e) => e.isIntersecting)
+            .sort((a, b) => a.boundingClientRect.top - b.boundingClientRect.top);
+          if (visible.length > 0) {
+            setActiveToc(visible[0].target.id);
+          }
+        },
+        { rootMargin: '-80px 0px -70% 0px', threshold: 0 }
+      );
+
+      headings.forEach((h) => observer.observe(h));
+    }
+
+    // 侧边栏分类折叠/展开
+    const sidebarToggles = document.querySelectorAll('.sidebar-toggle');
+    sidebarToggles.forEach((toggle) => {
+      toggle.addEventListener('click', () => {
+        const list = toggle.nextElementSibling;
+        const arrow = toggle.querySelector('.sidebar-arrow');
+        const isHidden = list.style.display === 'none';
+        list.style.display = isHidden ? '' : 'none';
+        arrow.style.transform = isHidden ? 'rotate(0deg)' : 'rotate(-90deg)';
+      });
+    });
+
+    // 初始化：折叠状态的分类箭头旋转
+    document.querySelectorAll('.sidebar-group').forEach((group) => {
+      const list = group.querySelector('.sidebar-list');
+      const arrow = group.querySelector('.sidebar-arrow');
+      if (list && list.style.display === 'none') {
+        arrow.style.transform = 'rotate(-90deg)';
+      }
+    });
+  </script>
+</Layout>

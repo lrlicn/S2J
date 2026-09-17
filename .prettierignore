@@ -1,0 +1,21 @@
+# build output
+dist/
+.output/
+
+# dependencies
+node_modules/
+
+# astro generated
+.astro/
+
+# logs
+*.log
+
+# environment
+.env
+.env.local
+
+# misc
+package-lock.json
+pnpm-lock.yaml
+yarn.lock

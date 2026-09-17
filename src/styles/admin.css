@@ -1,0 +1,82 @@
+/* ============================================
+   S2J Admin 后台专用样式
+   说明：后台大量 DOM 由 JS 动态渲染（文章卡片、标签 chip 等），
+   不能使用 Astro 组件的 scoped <style>（不会作用于动态插入的元素），
+   因此统一放在此全局样式表中，由 admin/index.astro 引入。
+   ============================================ */
+
+/* ---------- 启动遮罩（路由首次分发前覆盖，避免视图闪烁） ---------- */
+#admin-boot {
+  position: fixed;
+  inset: 0;
+  z-index: 100;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 14px;
+  background: #f8fafc;
+  color: #94a3b8;
+  font-size: 13px;
+}
+.dark #admin-boot {
+  background: #0f172a;
+  color: #64748b;
+}
+#admin-boot .boot-spinner {
+  width: 30px;
+  height: 30px;
+  border: 3px solid #cbd5e1;
+  border-top-color: #2563eb;
+  border-radius: 50%;
+  animation: admin-boot-spin 0.7s linear infinite;
+}
+.dark #admin-boot .boot-spinner {
+  border-color: #334155;
+  border-top-color: #3b82f6;
+}
+@keyframes admin-boot-spin {
+  to { transform: rotate(360deg); }
+}
+
+/* ---------- Toggle 开关 ---------- */
+.toggle-switch { position: relative; display: inline-block; width: 36px; height: 20px; flex-shrink: 0; }
+.toggle-switch input { opacity: 0; width: 0; height: 0; }
+.toggle-slider { position: absolute; cursor: pointer; inset: 0; background-color: #cbd5e1; border-radius: 20px; transition: 0.2s; }
+.toggle-slider::before { position: absolute; content: ""; height: 14px; width: 14px; left: 3px; bottom: 3px; background-color: white; border-radius: 50%; transition: 0.2s; }
+.toggle-switch:hover .toggle-slider { background-color: #94a3b8; }
+.toggle-switch input:checked + .toggle-slider { background-color: #3b82f6; }
+.toggle-switch input:checked + .toggle-slider::before { transform: translateX(16px); }
+.toggle-switch:hover input:checked + .toggle-slider { background-color: #2563eb; }
+.dark .toggle-slider { background-color: #475569; }
+.dark .toggle-switch:hover .toggle-slider { background-color: #64748b; }
+.dark .toggle-switch input:checked + .toggle-slider { background-color: #3b82f6; }
+.dark .toggle-switch:hover input:checked + .toggle-slider { background-color: #60a5fa; }
+
+/* ---------- 标签化输入 ---------- */
+.tag-input-container { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; min-height: 38px; padding: 4px 8px; border: 1px solid #cbd5e1; border-radius: 8px; background: white; }
+.dark .tag-input-container { border-color: #475569; background: #1e293b; }
+.tag-input-container:focus-within { border-color: #3b82f6; box-shadow: 0 0 0 2px rgba(59,130,246,0.2); }
+.tag-chip { display: inline-flex; align-items: center; gap: 4px; padding: 2px 8px; background: #dbeafe; color: #1e40af; border-radius: 9999px; font-size: 12px; font-weight: 500; }
+.dark .tag-chip { background: rgba(30,64,175,0.3); color: #93c5fd; }
+.tag-chip button { display: flex; align-items: center; justify-content: center; width: 14px; height: 14px; border-radius: 50%; background: rgba(0,0,0,0.1); color: inherit; font-size: 10px; line-height: 1; cursor: pointer; border: none; }
+.tag-chip button:hover { background: rgba(0,0,0,0.2); }
+.tag-input-field { flex: 1; min-width: 80px; border: none; outline: none; background: transparent; font-size: 13px; color: inherit; padding: 2px 0; }
+
+/* ---------- Markdown 工具栏 ---------- */
+.md-toolbar { display: flex; align-items: center; gap: 2px; padding: 6px 8px; background: #f8fafc; border-bottom: 1px solid #e2e8f0; }
+.dark .md-toolbar { background: rgba(30,41,59,0.5); border-color: #334155; }
+.md-toolbar button { display: flex; align-items: center; justify-content: center; min-width: 30px; height: 28px; padding: 0 6px; border: none; background: transparent; color: #475569; border-radius: 5px; font-size: 13px; cursor: pointer; transition: all 0.15s; }
+.dark .md-toolbar button { color: #94a3b8; }
+.md-toolbar button:hover { background: #e2e8f0; color: #1e293b; }
+.dark .md-toolbar button:hover { background: #334155; color: #f1f5f9; }
+.md-toolbar .divider { width: 1px; height: 18px; background: #e2e8f0; margin: 0 4px; }
+.dark .md-toolbar .divider { background: #334155; }
+.md-toolbar button.toolbar-active { background: #dbeafe; color: #1e40af; }
+.dark .md-toolbar button.toolbar-active { background: rgba(30,64,175,0.3); color: #93c5fd; }
+.md-heading-btn { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-weight: 700; font-size: 11px; letter-spacing: -0.02em; }
+
+/* ---------- 自定义下拉框 ---------- */
+.custom-select { appearance: none; -webkit-appearance: none; -moz-appearance: none; padding-right: 36px; cursor: pointer; }
+.custom-select::-ms-expand { display: none; }
+.custom-select:focus { outline: none; }

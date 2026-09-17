@@ -1,0 +1,16 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" fill="none">
+  <defs>
+    <linearGradient id="bgD" x1="0" y1="0" x2="64" y2="64" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#1e40af"/>
+      <stop offset="1" stop-color="#3b82f6"/>
+    </linearGradient>
+  </defs>
+  <!-- 背景：深蓝渐变圆角方形 -->
+  <rect width="64" height="64" rx="14" fill="url(#bgD)"/>
+  <!-- S 曲线：白色，代表学习路径 -->
+  <path d="M16 20 C12 16 50 18 48 30 C46 36 18 34 16 42 C14 50 28 54 34 50"
+        stroke="white" stroke-width="5" stroke-linecap="round" fill="none"/>
+  <!-- 对勾：琥珀色，和 S 末端自然衔接，代表"学会了""掌握了" -->
+  <path d="M34 50 L40 56 L52 42"
+        stroke="#f59e0b" stroke-width="5" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+</svg>
