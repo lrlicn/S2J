@@ -85,7 +85,11 @@ function isNavActive(path: string): boolean {
       <nav class="container-page flex items-center justify-between h-16">
         <!-- Logo -->
         <a href="/" class="flex items-center gap-2.5 group">
-          <img src="/favicon.svg" alt="S2J" class="w-10 h-10 rounded-xl shadow-md group-hover:shadow-lg group-hover:scale-105 transition-all" />
+          <img
+            src="/favicon.svg"
+            alt="S2J"
+            class="w-10 h-10 rounded-xl shadow-md group-hover:shadow-lg group-hover:scale-105 transition-all"
+          />
           <span class="font-extrabold text-xl text-slate-900 dark:text-white leading-tight tracking-tight">
             S2J
           </span>
@@ -97,7 +101,10 @@ function isNavActive(path: string): boolean {
             文档
           </a>
           {navCategories.map((cat) => (
-            <a href={`/docs/${cat.id}`} class={`nav-link ${isNavActive(`/docs/${cat.id}`) ? 'active' : ''}`}>
+            <a
+              href={`/docs/${cat.id}`}
+              class={`nav-link ${isNavActive(`/docs/${cat.id}`) ? 'active' : ''}`}
+            >
               {cat.name}
             </a>
           ))}
@@ -147,7 +154,7 @@ function isNavActive(path: string): boolean {
 
           <!-- GitHub 链接 -->
           <a
-            href="https://github.com"
+            href="https://github.com/lrlicn/S2J"
             target="_blank"
             rel="noopener noreferrer"
             class="p-2 rounded-lg text-slate-500 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
@@ -196,9 +203,7 @@ function isNavActive(path: string): boolean {
               <img src="/favicon.svg" alt="S2J" class="w-9 h-9 rounded-lg" />
               <span class="font-bold text-lg text-slate-900 dark:text-white">S2J</span>
             </div>
-            <p class="text-slate-500 dark:text-slate-400 text-sm">
-              简单学 Java
-            </p>
+            <p class="text-slate-500 dark:text-slate-400 text-sm">简单学 Java</p>
           </div>
 
           <!-- 快速链接 -->
@@ -254,7 +259,7 @@ function isNavActive(path: string): boolean {
               </li>
               <li>
                 <a
-                  href="https://github.com"
+                  href="https://github.com/lrlicn/S2J"
                   target="_blank"
                   rel="noopener noreferrer"
                   class="text-slate-600 dark:text-slate-400 hover:text-brand-600 dark:hover:text-brand-400 transition-colors"
@@ -365,7 +370,7 @@ function isNavActive(path: string): boolean {
             <span class="hidden dark:inline">切换亮色模式</span>
           </button>
           <a
-            href="https://github.com"
+            href="https://github.com/lrlicn/S2J"
             target="_blank"
             rel="noopener noreferrer"
             class="w-full flex items-center justify-center gap-2 px-4 py-3 rounded-lg border border-slate-300 dark:border-slate-600 text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-800 font-medium transition-colors"
