@@ -1,0 +1,379 @@
+---
+title: "循环语句 - 让程序学会重复做事"
+description: "掌握 for、while、do-while 三种循环结构，理解 break 和 continue 的区别，以及嵌套循环的执行逻辑。"
+category: "java-basics"
+tags: ["Java", "入门", "基础语法", "循环"]
+pubDate: "2026-09-19 17:30:00"
+updatedDate: "2026-09-19"
+author: "S2J"
+featured: false
+draft: false
+published: true
+order: 5
+keywords: ["Java", "循环", "for", "while", "break", "continue"]
+chapter: "入门基础"
+---
+
+循环是程序中最强大的能力之一。没有循环，你就要手动写一万行 `System.out.println()`；有了循环，三行代码就搞定。
+
+## 完整代码示例
+
+```java
+package dev.s2j.basics;
+
+/**
+ * LoopStatements - 循环语句示例
+ * 
+ * <p>演示了：
+ * <ul>
+ *   <li>for 循环</li>
+ *   <li>while 循环</li>
+ *   <li>do-while 循环</li>
+ *   <li>break 和 continue</li>
+ *   <li>嵌套循环</li>
+ *   <li>增强 for 循环（foreach）</li>
+ * </ul>
+ * </p>
+ * 
+ * @author S2J
+ * @version 1.0
+ */
+public class LoopStatements {
+
+    public static void main(String[] args) {
+        // ========== 1. for 循环 ==========
+        System.out.println("===== for 循环：1~10 求和 =====");
+        
+        int sum = 0;
+        for (int i = 1; i <= 10; i++) {
+            sum += i;
+        }
+        System.out.println("1 到 10 的和是: " + sum);  // 55
+        
+        // 倒序输出
+        System.out.print("\n倒序输出 10 到 1: ");
+        for (int i = 10; i >= 1; i--) {
+            System.out.print(i + " ");
+        }
+        System.out.println();
+        
+        // ========== 2. while 循环 ==========
+        System.out.println("\n===== while 循环：计算阶乘 =====");
+        
+        int n = 5;
+        int factorial = 1;
+        int i = 1;
+        while (i <= n) {
+            factorial *= i;
+            i++;
+        }
+        System.out.println(n + "! = " + factorial);  // 120
+        
+        // ========== 3. do-while 循环 ==========
+        System.out.println("\n===== do-while 循环：猜数字游戏 =====");
+        
+        // 模拟猜数字：答案是 7
+        int answer = 7;
+        int guess;
+        int attempts = 0;
+        
+        // 至少执行一次，直到猜中为止
+        do {
+            guess = (int)(Math.random() * 10) + 1;  // 随机猜 1~10
+            attempts++;
+            System.out.println("第 " + attempts + " 次猜: " + guess);
+        } while (guess != answer);
+        
+        System.out.println("猜中了！答案是 " + answer + "，共用了 " + attempts + " 次");
+        
+        // ========== 4. break 和 continue ==========
+        System.out.println("\n===== break 和 continue =====");
+        
+        // break：遇到 5 就跳出循环
+        System.out.print("遇到 5 就停: ");
+        for (int j = 1; j <= 10; j++) {
+            if (j == 5) break;
+            System.out.print(j + " ");
+        }
+        System.out.println();
+        
+        // continue：跳过偶数，只打印奇数
+        System.out.print("只打印奇数: ");
+        for (int j = 1; j <= 10; j++) {
+            if (j % 2 == 0) continue;
+            System.out.print(j + " ");
+        }
+        System.out.println();
+        
+        // ========== 5. 嵌套循环 ==========
+        System.out.println("\n===== 嵌套循环：九九乘法表 =====");
+        
+        for (int row = 1; row <= 9; row++) {
+            for (int col = 1; col <= row; col++) {
+                System.out.printf("%d×%d=%-2d ", col, row, col * row);
+            }
+            System.out.println();
+        }
+        
+        // ========== 6. 带标签的 break ==========
+        System.out.println("\n===== 带标签的 break：跳出多层循环 =====");
+        
+        // 查找二维数组中的某个值
+        int[][] matrix = {
+            {1, 2, 3},
+            {4, 5, 6},
+            {7, 8, 9}
+        };
+        int target = 5;
+        boolean found = false;
+        
+        search:  // 标签
+        for (int row = 0; row < matrix.length; row++) {
+            for (int col = 0; col < matrix[row].length; col++) {
+                if (matrix[row][col] == target) {
+                    System.out.println("找到 " + target + " 在 (" + row + ", " + col + ")");
+                    found = true;
+                    break search;  // 直接跳出两层循环
+                }
+            }
+        }
+        if (!found) {
+            System.out.println("没找到 " + target);
+        }
+        
+        // ========== 7. 增强 for 循环（foreach） ==========
+        System.out.println("\n===== 增强 for 循环（遍历数组） =====");
+        
+        int[] numbers = {10, 20, 30, 40, 50};
+        System.out.print("数组元素: ");
+        for (int num : numbers) {
+            System.out.print(num + " ");
+        }
+        System.out.println();
+    }
+}
+```
+
+## 逐行解析
+
+### 1. for 循环
+
+```java
+for (初始化; 条件; 更新) {
+    // 循环体
+}
+```
+
+**执行顺序**：
+1. 初始化（只执行一次）
+2. 判断条件，true 就执行循环体，false 就退出
+3. 执行更新语句
+4. 回到第 2 步
+
+```java
+for (int i = 1; i <= 10; i++) {
+    sum += i;
+}
+```
+
+这是最常用的循环，适合**知道循环次数**的场景。
+
+> **注意**：for 循环中定义的变量（比如上面的 `i`）只在循环内部有效，循环结束后就不存在了。
+
+### 2. while 循环
+
+```java
+while (条件) {
+    // 循环体
+}
+```
+
+**执行顺序**：
+1. 判断条件
+2. true 就执行循环体，然后回到第 1 步
+3. false 就退出循环
+
+适合**不知道循环次数，但知道结束条件**的场景。
+
+> **死循环警告**：一定要确保循环条件最终会变成 false，否则就死循环了！
+> ```java
+> while (true) { ... }  // 这就是死循环，必须有 break 才能跳出
+> ```
+
+### 3. do-while 循环
+
+```java
+do {
+    // 循环体
+} while (条件);
+```
+
+和 while 的区别：**至少执行一次**，因为先执行循环体，再判断条件。
+
+适合**需要先做一次，再根据结果判断要不要继续**的场景，比如菜单、猜数字游戏。
+
+```java
+// while 版：如果 answer 一开始就对，一次都不执行
+while (guess != answer) {
+    guess = 猜();
+}
+
+// do-while 版：至少猜一次
+do {
+    guess = 猜();
+} while (guess != answer);
+```
+
+### 4. break vs continue
+
+| 关键字 | 作用 | 类比 |
+|--------|------|------|
+| `break` | 立刻跳出整个循环 | 直接退出游戏 |
+| `continue` | 跳过本次循环剩余部分，进入下一次 | 这题跳过，做下一题 |
+
+```java
+// break：遇到 5 就停
+for (int j = 1; j <= 10; j++) {
+    if (j == 5) break;  // 整个循环结束
+    System.out.print(j + " ");  // 输出 1 2 3 4
+}
+
+// continue：跳过偶数
+for (int j = 1; j <= 10; j++) {
+    if (j % 2 == 0) continue;  // 跳过本次，继续下一次
+    System.out.print(j + " ");  // 输出 1 3 5 7 9
+}
+```
+
+> **注意**：break 和 continue 只对**最近的一层循环**生效。
+
+### 5. 嵌套循环
+
+循环里面再套循环，就是嵌套循环。外层循环走一步，内层循环走一圈。
+
+```java
+for (int row = 1; row <= 9; row++) {        // 外层：行
+    for (int col = 1; col <= row; col++) {  // 内层：列
+        System.out.print(...);
+    }
+    System.out.println();  // 一行结束，换行
+}
+```
+
+**执行过程**：
+- row=1 时，col 从 1 到 1（1 次）
+- row=2 时，col 从 1 到 2（2 次）
+- ...
+- row=9 时，col 从 1 到 9（9 次）
+
+总次数：1+2+3+...+9 = 45 次。
+
+### 6. 带标签的 break
+
+普通的 break 只能跳出最近的一层循环。如果想一下子跳出多层循环，就用带标签的 break：
+
+```java
+search:  // 标签名，随便起
+for (int row = 0; row < rows; row++) {
+    for (int col = 0; col < cols; col++) {
+        if (找到目标) {
+            break search;  // 直接跳出两层循环
+        }
+    }
+}
+```
+
+标签写在循环前面，冒号结尾。`break 标签名` 就会直接跳出标签所在的那层循环。
+
+> **最佳实践**：标签尽量少用。如果嵌套很深需要 break，考虑把循环抽成一个方法，用 return 代替。
+
+### 7. 增强 for 循环（foreach）
+
+```java
+int[] numbers = {10, 20, 30, 40, 50};
+for (int num : numbers) {
+    System.out.println(num);
+}
+```
+
+好处：写法简洁，不需要下标，不会越界。
+
+限制：
+- 只能从头到尾遍历，不能跳着来
+- 不能获取当前的下标位置
+- 不能修改数组元素
+
+> **原则**：只是遍历取值，用增强 for；需要下标或修改元素，用普通 for。
+
+## 常见坑点
+
+### 坑点 1：死循环
+
+```java
+// 少了 i++，永远死循环
+int i = 0;
+while (i < 10) {
+    System.out.println(i);
+    // 忘了写 i++
+}
+```
+
+写循环时，先想好"怎么退出"，再写循环体。
+
+### 坑点 2：边界错误
+
+```java
+// 循环 10 次还是 9 次？
+for (int i = 0; i < 10; i++) { ... }   // 10 次：0~9
+for (int i = 0; i <= 10; i++) { ... }  // 11 次：0~10
+for (int i = 1; i < 10; i++) { ... }   // 9 次：1~9
+```
+
+这就是著名的"差一错误"（off-by-one error），是循环中最常见的 bug。
+
+### 坑点 3：浮点数做循环计数器
+
+```java
+// 不要这样做！
+for (double d = 0; d != 1.0; d += 0.1) {
+    System.out.println(d);
+}
+```
+
+因为浮点数有精度误差，`0.1` 加 10 次可能不是正好等于 `1.0`，导致死循环。
+
+循环计数器永远用整数。
+
+### 坑点 4：循环内修改循环变量
+
+```java
+for (int i = 0; i < 10; i++) {
+    if (i == 5) {
+        i++;  // 手动改循环变量，容易出 bug
+    }
+}
+```
+
+在循环体内手动修改循环变量是非常不好的习惯，会让代码逻辑很难理解。真的需要跳过，用 continue。
+
+## 最佳实践
+
+1. **优先用 for**：知道次数就用 for，结构最清晰
+2. **计数器有意义**：变量名用 i, j, k 没问题，但如果是商品数量、用户数，用 productCount、userIndex 更清晰
+3. **循环体不要太长**：超过 20 行的循环体，考虑把内部逻辑抽成方法
+4. **嵌套不超过 3 层**：太深的嵌套很难读，想办法简化
+5. **break 和 continue 要谨慎用**：适当用可以提高效率，但滥用会让流程很乱
+
+## 小结
+
+这篇文章我们学习了：
+
+- for、while、do-while 三种循环结构的区别和适用场景
+- break 和 continue 的作用
+- 嵌套循环的执行逻辑
+- 带标签的 break 跳出多层循环
+- 增强 for 循环的优缺点
+
+循环是编程中最基础也最重要的结构，几乎所有程序都离不开它。多写几个小程序练练手，比如打印九九乘法表、计算斐波那契数列，很快就能熟练掌握。
+
+> **S2J 理念**：循环的本质是"用机器的重复，替代人的重复"。能写循环就不要复制粘贴，这是程序员的基本素养。
