@@ -1,0 +1,420 @@
+---
+title: "条件语句 - 让程序学会做判断"
+description: "掌握 if-else、switch-case 等条件语句的用法，理解 break 和 default 的作用，以及常见的分支结构设计。"
+category: "java-basics"
+tags: ["Java", "入门", "基础语法", "流程控制"]
+pubDate: "2026-09-19 17:20:00"
+updatedDate: "2026-09-19"
+author: "S2J"
+featured: false
+draft: false
+published: true
+order: 4
+keywords: ["Java", "条件语句", "if", "switch", "流程控制"]
+chapter: "入门基础"
+---
+
+条件语句让程序能够根据不同的情况执行不同的代码。这是程序具备"智能"的基础。
+
+## 完整代码示例
+
+```java
+package dev.s2j.basics;
+
+import java.util.Scanner;
+
+/**
+ * ConditionalStatements - 条件语句示例
+ * 
+ * <p>演示了：
+ * <ul>
+ *   <li>if-else 单分支与多分支</li>
+ *   <li>if-else if-else 多条件判断</li>
+ *   <li>嵌套 if 语句</li>
+ *   <li>switch-case 语句</li>
+ *   <li>三元表达式与条件语句的转换</li>
+ * </ul>
+ * </p>
+ * 
+ * @author S2J
+ * @version 1.0
+ */
+public class ConditionalStatements {
+
+    public static void main(String[] args) {
+        // ========== 1. 基本 if 语句 ==========
+        System.out.println("===== 基本 if 语句 =====");
+        
+        int score = 85;
+        
+        if (score >= 60) {
+            System.out.println("恭喜，你及格了！");
+        }
+        
+        // ========== 2. if-else 语句 ==========
+        System.out.println("\n===== if-else 语句 =====");
+        
+        int age = 17;
+        
+        if (age >= 18) {
+            System.out.println("你已经成年了，可以进入网吧。");
+        } else {
+            System.out.println("你还未成年，回家写作业吧。");
+        }
+        
+        // ========== 3. if-else if-else 多分支 ==========
+        System.out.println("\n===== 多分支判断（成绩等级） =====");
+        
+        int score2 = 78;
+        
+        if (score2 >= 90) {
+            System.out.println("优秀（" + score2 + "分）");
+        } else if (score2 >= 80) {
+            System.out.println("良好（" + score2 + "分）");
+        } else if (score2 >= 70) {
+            System.out.println("中等（" + score2 + "分）");
+        } else if (score2 >= 60) {
+            System.out.println("及格（" + score2 + "分）");
+        } else {
+            System.out.println("不及格（" + score2 + "分）");
+        }
+        
+        // ========== 4. 嵌套 if 语句 ==========
+        System.out.println("\n===== 嵌套 if 判断（登录验证） =====");
+        
+        String username = "admin";
+        String password = "123456";
+        boolean isLocked = false;
+        
+        if (!isLocked) {
+            if (username.equals("admin")) {
+                if (password.equals("123456")) {
+                    System.out.println("登录成功，欢迎 " + username + "！");
+                } else {
+                    System.out.println("密码错误");
+                }
+            } else {
+                System.out.println("用户名不存在");
+            }
+        } else {
+            System.out.println("账号已被锁定，请联系管理员");
+        }
+        
+        // 用 && 简化嵌套，更清晰
+        System.out.println("\n--- 用 && 简化嵌套 ---");
+        if (!isLocked && username.equals("admin") && password.equals("123456")) {
+            System.out.println("登录成功！");
+        } else {
+            System.out.println("登录失败");
+        }
+        
+        // ========== 5. switch-case 语句 ==========
+        System.out.println("\n===== switch-case 语句（星期几） =====");
+        
+        int dayOfWeek = 3;  // 1=周一, 2=周二, ..., 7=周日
+        
+        switch (dayOfWeek) {
+            case 1:
+                System.out.println("星期一：新的一周开始了");
+                break;
+            case 2:
+                System.out.println("星期二：工作日");
+                break;
+            case 3:
+                System.out.println("星期三：周中了");
+                break;
+            case 4:
+                System.out.println("星期四：快周末了");
+                break;
+            case 5:
+                System.out.println("星期五：明天就周末了！");
+                break;
+            case 6:
+            case 7:
+                System.out.println("周末：休息出去玩！");
+                break;
+            default:
+                System.out.println("无效的星期数字");
+        }
+        
+        // ========== 6. switch 表达式（Java 14+） ==========
+        System.out.println("\n===== switch 表达式（Java 14+） =====");
+        
+        String fruit = "apple";
+        String color = switch (fruit) {
+            case "apple", "pear" -> "绿色或红色";
+            case "banana" -> "黄色";
+            case "orange" -> "橙色";
+            default -> "未知颜色";
+        };
+        System.out.println(fruit + " 是 " + color);
+        
+        // ========== 7. 三元表达式 ==========
+        System.out.println("\n===== 三元表达式 =====");
+        
+        int num = -5;
+        String sign = (num >= 0) ? "正数或零" : "负数";
+        System.out.println(num + " 是 " + sign);
+        
+        // 求最大值
+        int a = 10, b = 20;
+        int max = (a > b) ? a : b;
+        System.out.println("max(" + a + ", " + b + ") = " + max);
+    }
+}
+```
+
+## 逐行解析
+
+### 1. if 语句的三种形式
+
+**形式一：单分支**
+```java
+if (条件) {
+    // 条件为 true 时执行
+}
+```
+
+**形式二：双分支**
+```java
+if (条件) {
+    // 条件为 true 时执行
+} else {
+    // 条件为 false 时执行
+}
+```
+
+**形式三：多分支**
+```java
+if (条件1) {
+    // 条件1 为 true 时执行
+} else if (条件2) {
+    // 条件2 为 true 时执行
+} else if (条件3) {
+    // 条件3 为 true 时执行
+} else {
+    // 所有条件都不满足时执行
+}
+```
+
+> **执行规则**：从上到下依次判断，遇到第一个为 true 的分支就执行，然后跳出整个 if 结构，后面的都不看了。
+
+### 2. 省略大括号的坑
+
+```java
+// 只有一行时，可以省略大括号
+if (score >= 60)
+    System.out.println("及格了");
+
+// 但是！只控制第一行！
+if (score >= 60)
+    System.out.println("及格了");
+    System.out.println("恭喜");  // 这行不受 if 控制，永远执行！
+```
+
+> **最佳实践**：永远写大括号，哪怕只有一行代码。少一行代码带来的好处，远不如少一个 bug 重要。
+
+### 3. 嵌套 if 与逻辑运算
+
+嵌套 if 可以用逻辑运算符简化，让代码更扁平：
+
+```java
+// 嵌套写法
+if (!isLocked) {
+    if (username.equals("admin")) {
+        if (password.equals("123456")) {
+            System.out.println("登录成功");
+        }
+    }
+}
+
+// 等价的简化写法
+if (!isLocked && username.equals("admin") && password.equals("123456")) {
+    System.out.println("登录成功");
+}
+```
+
+哪种更好？要看情况：
+- 如果每个失败原因需要不同的提示信息，用嵌套 if
+- 如果只需要一个总的成功/失败结果，用 && 更简洁
+
+### 4. switch-case 语句
+
+```java
+switch (表达式) {
+    case 值1:
+        // 代码
+        break;
+    case 值2:
+        // 代码
+        break;
+    default:
+        // 所有 case 都不匹配时执行
+}
+```
+
+**关键规则**：
+- `switch` 后面的表达式类型可以是：byte, short, int, char, 枚举, String（Java 7+）
+- 每个 `case` 后面必须有 `break`，否则会**穿透**继续执行下一个 case
+- `default` 是可选的，放最后面，所有 case 都不匹配时执行
+
+### 5. break 的穿透问题
+
+```java
+int day = 1;
+switch (day) {
+    case 1:
+        System.out.println("周一");
+    case 2:
+        System.out.println("周二");
+    case 3:
+        System.out.println("周三");
+        break;
+    default:
+        System.out.println("其他");
+}
+```
+
+**输出**：
+```
+周一
+周二
+周三
+```
+
+因为 case 1 和 case 2 都没有 break，所以会一直往下执行，直到遇到 case 3 的 break。
+
+> **注意**：有时候我们会故意利用穿透，比如周末两天的处理是一样的：
+> ```java
+> case 6:
+> case 7:
+>     System.out.println("周末");
+>     break;
+> ```
+> 这叫**fall-through**，是有意为之的。
+
+### 6. Java 14+ 的 switch 表达式
+
+旧版 switch 是语句，没有返回值。新版 switch 是表达式，可以直接赋值：
+
+```java
+String color = switch (fruit) {
+    case "apple", "pear" -> "绿色";
+    case "banana" -> "黄色";
+    default -> "未知";
+};
+```
+
+新语法的好处：
+- 自动 break，不会穿透
+- 支持多个值用逗号合并
+- 可以直接作为表达式赋值
+
+> **兼容性**：如果你用的是 Java 8 或 11，用不了这个语法。企业项目里现在还是以传统 switch 为主。
+
+### 7. 三元表达式 vs if-else
+
+简单的二选一，用三元表达式更简洁：
+
+```java
+// if-else 写法
+String status;
+if (age >= 18) {
+    status = "成年";
+} else {
+    status = "未成年";
+}
+
+// 三元表达式写法
+String status = (age >= 18) ? "成年" : "未成年";
+```
+
+> **原则**：三元表达式只用来做简单的赋值。如果逻辑复杂，或者有多个语句，还是用 if-else 更清晰。
+
+## 常见坑点
+
+### 坑点 1：== 与 equals
+
+```java
+String name = "admin";
+if (name == "admin") { ... }  // 不靠谱！
+```
+
+字符串比较一定要用 `equals()`：
+```java
+if ("admin".equals(name)) { ... }  // 推荐：常量在前，避免空指针
+```
+
+把常量写在前面，如果 name 是 null，不会抛空指针，直接返回 false。
+
+### 坑点 2：浮点数值的比较
+
+```java
+double d = 0.1 + 0.2;
+if (d == 0.3) { ... }  // false！
+```
+
+浮点数不要用 == 比较，用差值判断：
+```java
+if (Math.abs(d - 0.3) < 1e-9) { ... }
+```
+
+### 坑点 3：switch 忘记 break
+
+这是最常见的 bug。写 switch 时，每个 case 写完先写 break，再写逻辑代码，就不容易忘。
+
+### 坑点 4：if 后面多写了分号
+
+```java
+if (score >= 60);  // 多了个分号！
+{
+    System.out.println("及格了");
+}
+```
+
+分号表示 if 语句已经结束了，后面的大括号块就不受 if 控制了，永远会执行。
+
+## 最佳实践
+
+1. **永远写大括号**：哪怕只有一行代码
+2. **常量写在前面**：`"admin".equals(name)` 比 `name.equals("admin")` 安全
+3. **分支不要太多**：如果 if-else if 超过 4 个分支，考虑用 switch 或者策略模式
+4. **保持分支平衡**：if 和 else 的代码量不要差太多，否则说明逻辑设计有问题
+5. **嵌套不要超过 3 层**：太深的嵌套很难读，考虑提前返回（卫语句）
+
+**卫语句示例**：
+```java
+// 不好：嵌套很深
+public void doSomething(User user) {
+    if (user != null) {
+        if (user.isActive()) {
+            if (user.hasPermission("admin")) {
+                // 真正的逻辑
+            }
+        }
+    }
+}
+
+// 好：卫语句提前返回
+public void doSomething(User user) {
+    if (user == null) return;
+    if (!user.isActive()) return;
+    if (!user.hasPermission("admin")) return;
+    // 真正的逻辑
+}
+```
+
+## 小结
+
+这篇文章我们学习了：
+
+- if、if-else、if-else if-else 三种条件结构
+- 嵌套 if 的写法和简化方法
+- switch-case 语句的用法和穿透问题
+- Java 14+ 的 switch 表达式
+- 三元表达式的适用场景
+- 条件判断中的常见坑点
+
+掌握了条件语句，下一篇我们学习**循环语句**，让程序学会重复做事。
+
+> **S2J 理念**：条件语句是程序逻辑的骨架。写完代码后，在脑子里走一遍所有可能的分支，看看有没有漏掉的情况，这就是单元测试的雏形。
