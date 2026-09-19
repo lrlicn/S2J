@@ -3,8 +3,8 @@ import Layout from '@layouts/Layout.astro';
 import { getCategoryById } from '../config/categories';
 import { getCollection } from 'astro:content';
 
-// 获取所有已发布的文章
-const allDocs = await getCollection('docs', ({ data }) => data.draft !== true);
+// 获取所有已发布的文章（与文档列表、详情页的过滤条件保持一致）
+const allDocs = await getCollection('docs', ({ data }) => !data.draft && data.published);
 
 // 按发布日期排序取最新的 5 篇
 const recentDocs = [...allDocs]
@@ -62,7 +62,7 @@ function formatDate(date?: Date) {
             const cat = getCategoryById(doc.data.category);
             return (
               <a
-                href={`/docs/${doc.data.category}/${doc.slug}`}
+                href={`/docs/${doc.id.replace(/\.mdx?$/, '')}`}
                 class="flex items-center justify-between gap-4 py-3 px-4 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors group"
               >
                 <span class="font-medium text-slate-700 dark:text-slate-300 group-hover:text-brand-600 dark:group-hover:text-brand-400 transition-colors truncate">

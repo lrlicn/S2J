@@ -16,8 +16,9 @@ const docsByCategory = allDocs.reduce((acc, doc) => {
   return acc;
 }, {} as Record<string, CollectionEntry<'docs'>[]>);
 
-// 按导航排序展示所有分类（包括暂无内容的分类）
+// 按导航排序展示分类（排除"其他"兜底分类，与 Header 导航保持一致）
 const sortedCategoryIds = categories
+  .filter((c) => c.id !== 'other')
   .sort((a, b) => a.navOrder - b.navOrder)
   .map((c) => c.id);
 ---

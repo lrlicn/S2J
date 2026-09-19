@@ -1,6 +1,6 @@
----
+﻿---
 import '@styles/global.css';
-import { getCategoryById } from '../config/categories';
+import { categories, getCategoryById } from '../config/categories';
 import Search from '../components/Search.astro';
 
 interface Props {
@@ -16,11 +16,8 @@ const {
 // 当前页面完整 URL，用于 canonical 和 OG
 const canonicalURL = new URL(Astro.url.pathname, Astro.site).toString();
 
-// 主导航显示的分类（从配置中心读取名称，避免硬编码）
-const navCategoryIds = ['java-basics', 'spring', 'java-ai'];
-const navCategories = navCategoryIds
-  .map((id) => getCategoryById(id))
-  .filter((c): c is NonNullable<typeof c> => c !== undefined);
+// 主导航显示的分类（从配置中心读取，与全部文档页保持一致）
+const navCategories = categories.filter((c) => c.id !== 'other');
 
 // 判断导航链接是否为当前页面（用于 active 高亮）
 function isNavActive(path: string): boolean {
