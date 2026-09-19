@@ -23,6 +23,7 @@ const docs = defineCollection({
       // 时间
       pubDate: z.coerce.date().optional().describe('发布日期'),
       updatedDate: z.coerce.date().optional().describe('更新日期'),
+      scheduledDate: z.coerce.date().optional().describe('定时发布日期，到时间后自动发布'),
 
       // 作者
       author: z.string().default('S2J').describe('作者'),

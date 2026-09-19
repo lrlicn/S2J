@@ -13,10 +13,10 @@ export async function getStaticPaths() {
 const { category } = Astro.params;
 const meta = getCategoryById(category as string)!;
 
-// 获取该分类下的所有已发布文档
+// 获取该分类下的所有已发布文档（按发布时间倒序，新文章在前）
 const docs = (await getCollection('docs', ({ data }) =>
   !data.draft && data.published && data.category === category
-)).sort((a, b) => a.data.order - b.data.order);
+)).sort((a, b) => new Date(b.data.pubDate || 0).getTime() - new Date(a.data.pubDate || 0).getTime());
 
 // 按章节分组
 const docsByChapter = docs.reduce((acc, doc) => {
@@ -26,11 +26,11 @@ const docsByChapter = docs.reduce((acc, doc) => {
   return acc;
 }, {} as Record<string, CollectionEntry<'docs'>[]>);
 
-// 章节按文章最小 order 排序
+// 章节按最新文章时间排序
 const sortedChapters = Object.entries(docsByChapter).sort((a, b) => {
-  const minOrderA = Math.min(...a[1].map((d) => d.data.order));
-  const minOrderB = Math.min(...b[1].map((d) => d.data.order));
-  return minOrderA - minOrderB;
+  const latestA = Math.max(...a[1].map((d) => new Date(d.data.pubDate || 0).getTime()));
+  const latestB = Math.max(...b[1].map((d) => new Date(d.data.pubDate || 0).getTime()));
+  return latestB - latestA;
 });
 ---
 

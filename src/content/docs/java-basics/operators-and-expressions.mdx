@@ -1,0 +1,345 @@
+---
+title: "运算符与表达式 - 计算的基本规则"
+description: "系统学习 Java 的各类运算符：算术、赋值、比较、逻辑、位运算，以及运算符优先级和短路求值。"
+category: "java-basics"
+tags: ["Java", "入门", "基础语法", "运算符"]
+pubDate: "2026-09-19 17:10:00"
+updatedDate: "2026-09-19"
+author: "S2J"
+featured: false
+draft: false
+published: true
+order: 3
+keywords: ["Java", "运算符", "表达式", "优先级"]
+chapter: "入门基础"
+---
+
+运算符是程序中进行计算和比较的符号。这篇文章带你系统掌握 Java 的各类运算符，以及容易踩的坑。
+
+## 完整代码示例
+
+```java
+package dev.s2j.basics;
+
+/**
+ * OperatorsAndExpressions - Java 运算符示例
+ * 
+ * <p>演示了：
+ * <ul>
+ *   <li>算术运算符</li>
+ *   <li>赋值运算符</li>
+ *   <li>比较运算符</li>
+ *   <li>逻辑运算符</li>
+ *   <li>三元运算符</li>
+ *   <li>运算符优先级与短路求值</li>
+ * </ul>
+ * </p>
+ * 
+ * @author S2J
+ * @version 1.0
+ */
+public class OperatorsAndExpressions {
+
+    public static void main(String[] args) {
+        // ========== 1. 算术运算符 ==========
+        System.out.println("===== 算术运算符 =====");
+        
+        int a = 10, b = 3;
+        System.out.printf("a = %d, b = %d%n", a, b);
+        System.out.printf("a + b = %d%n", a + b);   // 加法
+        System.out.printf("a - b = %d%n", a - b);   // 减法
+        System.out.printf("a * b = %d%n", a * b);   // 乘法
+        System.out.printf("a / b = %d%n", a / b);   // 除法（整数除法，丢弃小数）
+        System.out.printf("a %% b = %d%n", a % b);  // 取模（求余数）
+        
+        // 自增自减
+        int x = 5;
+        System.out.printf("\nx = %d%n", x);
+        System.out.printf("x++ = %d (先返回再加 1)%n", x++);  // 后置：先返回原值，再 +1
+        System.out.printf("现在 x = %d%n", x);
+        System.out.printf("++x = %d (先加 1 再返回)%n", ++x);  // 前置：先 +1，再返回新值
+        System.out.printf("现在 x = %d%n", x);
+        
+        // 负数取模
+        System.out.printf("\n-10 %% 3 = %d%n", -10 % 3);  // 结果是 -1，符号跟被除数走
+        
+        // ========== 2. 赋值运算符 ==========
+        System.out.println("\n===== 赋值运算符 =====");
+        
+        int num = 10;
+        System.out.println("初始 num = " + num);
+        num += 5;   // 等同于 num = num + 5
+        System.out.println("num += 5 → " + num);
+        num -= 3;   // 等同于 num = num - 3
+        System.out.println("num -= 3 → " + num);
+        num *= 2;   // 等同于 num = num * 2
+        System.out.println("num *= 2 → " + num);
+        num /= 4;   // 等同于 num = num / 4
+        System.out.println("num /= 4 → " + num);
+        num %= 3;   // 等同于 num = num % 3
+        System.out.println("num %= 3 → " + num);
+        
+        // ========== 3. 比较运算符 ==========
+        System.out.println("\n===== 比较运算符 =====");
+        
+        int p = 5, q = 10;
+        System.out.printf("p = %d, q = %d%n", p, q);
+        System.out.printf("p == q: %b%n", p == q);   // 等于
+        System.out.printf("p != q: %b%n", p != q);   // 不等于
+        System.out.printf("p > q: %b%n", p > q);     // 大于
+        System.out.printf("p < q: %b%n", p < q);     // 小于
+        System.out.printf("p >= q: %b%n", p >= q);   // 大于等于
+        System.out.printf("p <= q: %b%n", p <= q);   // 小于等于
+        
+        // 注意：字符串比较要用 equals()，不能用 ==
+        String s1 = new String("hello");
+        String s2 = new String("hello");
+        System.out.printf("\ns1 == s2: %b (比较的是地址)%n", s1 == s2);       // false
+        System.out.printf("s1.equals(s2): %b (比较的是内容)%n", s1.equals(s2)); // true
+        
+        // ========== 4. 逻辑运算符 ==========
+        System.out.println("\n===== 逻辑运算符 =====");
+        
+        boolean t = true, f = false;
+        System.out.printf("t = %b, f = %b%n", t, f);
+        System.out.printf("t && f (与): %b%n", t && f);   // 两个都为 true 才是 true
+        System.out.printf("t || f (或): %b%n", t || f);   // 有一个 true 就是 true
+        System.out.printf("!t (非): %b%n", !t);           // 取反
+        
+        // 短路求值演示
+        System.out.println("\n--- 短路求值 ---");
+        int i = 10;
+        boolean result1 = (i > 5) || (i++ > 100);  // 左边已经是 true，右边不会执行
+        System.out.printf("result1 = %b, i = %d (右边没执行，i 没变)%n", result1, i);
+        
+        int j = 10;
+        boolean result2 = (j < 5) && (j++ > 100);  // 左边已经是 false，右边不会执行
+        System.out.printf("result2 = %b, j = %d (右边没执行，j 没变)%n", result2, j);
+        
+        // ========== 5. 三元运算符 ==========
+        System.out.println("\n===== 三元运算符 =====");
+        
+        int score = 75;
+        String grade = (score >= 60) ? "及格" : "不及格";
+        System.out.printf("分数 %d 分 → %s%n", score, grade);
+        
+        // 求两个数的最大值
+        int x1 = 10, x2 = 20;
+        int max = (x1 > x2) ? x1 : x2;
+        System.out.printf("max(%d, %d) = %d%n", x1, x2, max);
+        
+        // ========== 6. 运算符优先级 ==========
+        System.out.println("\n===== 运算符优先级 =====");
+        
+        // 优先级：括号 > 乘除 > 加减
+        int result = 2 + 3 * 4;
+        System.out.println("2 + 3 * 4 = " + result);  // 14，不是 20
+        System.out.println("(2 + 3) * 4 = " + (2 + 3) * 4);  // 20
+        
+        // 逻辑运算符中，&& 优先级高于 ||
+        boolean boolResult = true || false && false;
+        System.out.println("true || false && false = " + boolResult);  // true
+        // 等同于 true || (false && false) = true || false = true
+    }
+}
+```
+
+## 逐行解析
+
+### 1. 算术运算符
+
+| 运算符 | 含义 | 示例 | 结果 |
+|--------|------|------|------|
+| `+` | 加法 | `10 + 3` | `13` |
+| `-` | 减法 | `10 - 3` | `7` |
+| `*` | 乘法 | `10 * 3` | `30` |
+| `/` | 除法 | `10 / 3` | `3`（整数除法！） |
+| `%` | 取模 | `10 % 3` | `1` |
+
+**整数除法的坑**：两个整数相除，结果还是整数，小数部分直接丢弃。如果需要小数结果，必须至少有一个操作数是浮点数：
+
+```java
+System.out.println(10 / 3);       // 3
+System.out.println(10.0 / 3);     // 3.333...
+System.out.println((double)10 / 3); // 3.333...
+```
+
+### 2. 自增自减：前置 vs 后置
+
+```java
+int x = 5;
+System.out.println(x++);  // 输出 5，然后 x 变成 6
+System.out.println(++x);  // x 先变成 7，然后输出 7
+```
+
+| 写法 | 执行顺序 | 表达式的值 |
+|------|---------|-----------|
+| `x++` | 先返回原值，再 +1 | 原 x |
+| `++x` | 先 +1，再返回新值 | 新 x |
+
+> **最佳实践**：尽量不要在复杂表达式中用自增自减，单独写一行更清晰。
+> ```java
+> // 不好
+> int y = x++ + ++x;
+> 
+> // 好
+> x++;
+> int y = x + x;
+> ```
+
+### 3. 取模运算的符号
+
+```java
+System.out.println(-10 % 3);  // -1
+System.out.println(10 % -3);  // 1
+System.out.println(-10 % -3); // -1
+```
+
+**规则**：取模结果的符号跟**被除数**走，跟除数无关。
+
+### 4. 赋值运算符的简写
+
+```java
+num += 5;   // 等同于 num = num + 5
+num -= 3;   // 等同于 num = num - 3
+num *= 2;   // 等同于 num = num * 2
+num /= 4;   // 等同于 num = num / 4
+```
+
+这些简写运算符不仅写起来短，还有一个好处：会自动处理类型转换。
+
+```java
+byte b = 10;
+b += 5;  // 正确！b = (byte)(b + 5)，自动强转
+// b = b + 5;  // 错误！b + 5 是 int，不能直接赋值给 byte
+```
+
+### 5. == vs equals
+
+```java
+String s1 = new String("hello");
+String s2 = new String("hello");
+System.out.println(s1 == s2);        // false，比较的是对象地址
+System.out.println(s1.equals(s2));   // true，比较的是内容
+```
+
+**重要规则**：
+- 基本类型（int, double, char 等）：用 `==` 比较值
+- 引用类型（String, 自定义类等）：用 `equals()` 比较内容
+
+### 6. 短路求值
+
+这是最容易踩坑的地方：
+
+```java
+// && 短路：左边为 false 时，右边不执行
+false && 右值;  // 右边直接跳过，因为整体已经是 false 了
+
+// || 短路：左边为 true 时，右边不执行
+true || 右值;   // 右边直接跳过，因为整体已经是 true 了
+```
+
+**利用短路可以做安全判断**：
+
+```java
+// 安全地调用方法，避免空指针
+if (str != null && str.length() > 0) {
+    // 如果 str 是 null，左边直接 false，右边的 str.length() 不会执行
+    System.out.println(str);
+}
+```
+
+> **注意顺序**：把容易判断、不会出错的条件放左边，可能抛异常的放右边。
+
+### 7. 三元运算符
+
+```java
+类型 变量 = 条件 ? 值1 : 值2;
+```
+
+如果条件为 true，整个表达式的值是值1；否则是值2。
+
+```java
+int age = 20;
+String status = (age >= 18) ? "成年" : "未成年";
+```
+
+三元运算符适合简单的二选一逻辑。如果逻辑复杂，还是用 if-else 更清晰。
+
+### 8. 运算符优先级
+
+常见优先级从高到低：
+
+| 优先级 | 运算符 | 结合性 |
+|--------|--------|--------|
+| 1 | `()` 括号 | 从左到右 |
+| 2 | `++`, `--`, `!` 一元运算符 | 从右到左 |
+| 3 | `*`, `/`, `%` | 从左到右 |
+| 4 | `+`, `-` | 从左到右 |
+| 5 | `<`, `>`, `<=`, `>=` | 从左到右 |
+| 6 | `==`, `!=` | 从左到右 |
+| 7 | `&&` | 从左到右 |
+| 8 | `\|\|` | 从左到右 |
+| 9 | `?:` 三元 | 从右到左 |
+| 10 | `=`, `+=`, `-=` 赋值 | 从右到左 |
+
+> **最佳实践**：不要依赖记忆的优先级，拿不准就加括号。代码可读性比省几个括号重要得多。
+
+## 常见坑点
+
+### 坑点 1：浮点数精度
+
+```java
+double d = 0.1 + 0.2;
+System.out.println(d == 0.3);  // false！
+```
+
+因为浮点数无法精确表示某些十进制小数。比较浮点数时，应该判断差值是否小于一个很小的数：
+
+```java
+if (Math.abs(d - 0.3) < 1e-9) {
+    System.out.println("差不多相等");
+}
+```
+
+### 坑点 2：Integer 缓存
+
+```java
+Integer a = 127, b = 127;
+System.out.println(a == b);  // true
+
+Integer c = 128, d = 128;
+System.out.println(c == d);  // false！
+```
+
+Java 对 `-128 ~ 127` 的 Integer 做了缓存，超出这个范围就会创建新对象。所以比较包装类型一定要用 `equals()`。
+
+### 坑点 3：逗号表达式
+
+Java 没有 C 语言那样的逗号表达式，不要写：
+
+```java
+int i = (1, 2, 3);  // 语法错误！
+```
+
+## 最佳实践
+
+1. **拿不准就加括号**：不要考验读者的记忆力
+2. **字符串比较永远用 equals**：== 是比地址的
+3. **不要在表达式里放副作用**：把自增、方法调用单独写一行
+4. **短路逻辑要合理**：把最可能不成立的条件放前面，提高效率
+5. **浮点数不要直接 == 比较**：用差值判断
+
+## 小结
+
+这篇文章我们学习了：
+
+- 算术、赋值、比较、逻辑、三元等各类运算符
+- 自增自减前置后置的区别
+- 短路求值的原理和应用
+- 字符串 == 和 equals 的区别
+- 运算符优先级
+
+掌握了运算符，下一篇我们学习**条件语句**，让程序学会做判断。
+
+> **S2J 理念**：运算符看着简单，但里面全是坑。写几个小程序试试，故意制造一些边界情况，你会发现很多意想不到的结果。

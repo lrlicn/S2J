@@ -7,6 +7,7 @@ import { api } from './api.js';
 import { store } from './store.js';
 import { showToast } from './toast.js';
 import { CATEGORY_NAMES, PAGE_SIZE, PREVIEW_STORAGE_KEY } from './config.js';
+import { openPushModal } from './push-modal.js';
 
 function escapeHtml(value) {
   return String(value ?? '')
@@ -60,6 +61,54 @@ export function initPosts({ router }) {
   const jumpInput = document.getElementById('page-jump-input');
   const jumpBtn = document.getElementById('page-jump-btn');
   const searchInput = document.getElementById('filter-search');
+  let pushModeBar = null;
+  let pushSelectAll = null;
+  let pushSelectedCount = null;
+  let pushCancelBtn = null;
+  let pushConfirmBtn = null;
+
+  // 动态创建推送操作栏
+  function createPushBar() {
+    if (pushModeBar) return;
+    pushModeBar = document.createElement('div');
+    pushModeBar.id = 'push-mode-bar';
+    pushModeBar.className = 'hidden mb-4 p-4 bg-brand-50 dark:bg-brand-900/20 rounded-xl flex items-center justify-between';
+    pushModeBar.innerHTML = `
+      <div class="flex items-center gap-4">
+        <label class="flex items-center gap-2 cursor-pointer">
+          <input id="push-select-all" type="checkbox" class="rounded border-slate-300 dark:border-slate-600 text-brand-600 focus:ring-brand-500" />
+          <span class="text-sm font-medium text-slate-700 dark:text-slate-200">全选本页</span>
+        </label>
+        <span id="push-selected-count" class="text-sm text-slate-500 dark:text-slate-400">已选 0 篇</span>
+      </div>
+      <div class="flex items-center gap-2">
+        <button id="push-cancel" class="px-3 py-1.5 text-sm font-medium text-slate-600 dark:text-slate-300 border border-slate-300 dark:border-slate-600 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors">取消</button>
+        <button id="push-confirm" class="px-3 py-1.5 text-sm font-medium bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg transition-colors">推送选中文章</button>
+      </div>
+    `;
+    // 插入到 post-list 前面
+    postList.parentNode.insertBefore(pushModeBar, postList);
+    pushSelectAll = document.getElementById('push-select-all');
+    pushSelectedCount = document.getElementById('push-selected-count');
+    pushCancelBtn = document.getElementById('push-cancel');
+    pushConfirmBtn = document.getElementById('push-confirm');
+
+    // 绑定事件
+    pushCancelBtn?.addEventListener('click', exitPushMode);
+    pushConfirmBtn?.addEventListener('click', pushSelected);
+    pushSelectAll?.addEventListener('change', () => {
+      const filtered = getFiltered();
+      const start = (store.page - 1) * PAGE_SIZE;
+      const pageData = filtered.slice(start, start + PAGE_SIZE);
+      if (pushSelectAll.checked) {
+        pageData.forEach((p) => store.selectedSlugs.add(p.slug));
+      } else {
+        pageData.forEach((p) => store.selectedSlugs.delete(p.slug));
+      }
+      render();
+      updatePushBar();
+    });
+  }
 
   // ---------- 加载 ----------
   async function load() {
@@ -107,6 +156,18 @@ export function initPosts({ router }) {
     return [...filtered].sort((a, b) => parseDay(b.pubDate) - parseDay(a.pubDate));
   }
 
+  // ---------- 推送状态 ----------
+  function getPushStatusHtml(post) {
+    if (!post.githubPushedAt) {
+      return '<span class="inline-flex px-2 py-0.5 rounded-full text-xs font-medium w-fit bg-slate-100 text-slate-500 dark:bg-slate-700 dark:text-slate-400">未推送</span>';
+    }
+    // 比较内容哈希：一样就是已推送，不一样就是有更新
+    if (post.pushedContentHash && post.currentContentHash && post.pushedContentHash !== post.currentContentHash) {
+      return '<span class="inline-flex px-2 py-0.5 rounded-full text-xs font-medium w-fit bg-amber-100 text-amber-800 dark:bg-amber-900/40 dark:text-amber-300">有更新未推送</span>';
+    }
+    return '<span class="inline-flex px-2 py-0.5 rounded-full text-xs font-medium w-fit bg-emerald-100 text-emerald-800 dark:bg-emerald-900/40 dark:text-emerald-300">已推送</span>';
+  }
+
   // ---------- 渲染 ----------
   function render() {
     const filtered = getFiltered();
@@ -147,6 +208,7 @@ export function initPosts({ router }) {
     postList.innerHTML = pageData
       .map((post) => {
         const encodedSlug = encodeURIComponent(post.slug);
+        const isSelected = store.selectedSlugs.has(post.slug);
         const statusClass = post.draft
           ? 'bg-amber-100 text-amber-800 dark:bg-amber-900/40 dark:text-amber-300'
           : 'bg-emerald-100 text-emerald-800 dark:bg-emerald-900/40 dark:text-emerald-300';
@@ -162,39 +224,46 @@ export function initPosts({ router }) {
                 )
                 .join('')
             : '';
+        const checkboxHtml = store.pushMode
+          ? `<input type="checkbox" data-action="toggle-select" data-slug="${encodedSlug}" ${isSelected ? 'checked' : ''} class="w-5 h-5 rounded border-slate-300 text-brand-600 focus:ring-brand-500 cursor-pointer flex-shrink-0" />`
+          : '';
+        const actionButtons = store.pushMode ? '' : `
+            <div class="flex-shrink-0 flex items-center gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+              ${post.draft ? `<button data-action="publish" data-slug="${encodedSlug}" class="w-10 h-10 rounded-full bg-brand-600 hover:bg-brand-700 shadow-lg hover:shadow-xl hover:shadow-brand-500/30 flex items-center justify-center text-white transition-all text-base font-medium" title="发布">发</button>` : ''}
+              <button data-action="preview" data-slug="${encodedSlug}" class="w-10 h-10 rounded-full bg-white dark:bg-slate-700 shadow-lg hover:shadow-xl hover:shadow-brand-500/30 flex items-center justify-center text-slate-500 hover:text-brand-600 dark:hover:text-brand-400 transition-all text-base font-medium" title="预览">预</button>
+              <button data-action="edit" data-slug="${encodedSlug}" class="w-10 h-10 rounded-full bg-white dark:bg-slate-700 shadow-lg hover:shadow-xl hover:shadow-brand-500/30 flex items-center justify-center text-slate-500 hover:text-brand-600 dark:hover:text-brand-400 transition-all text-base font-medium" title="编辑">改</button>
+              <button data-action="delete" data-slug="${encodedSlug}" class="w-10 h-10 rounded-full bg-white dark:bg-slate-700 shadow-lg hover:shadow-xl hover:shadow-red-500/30 flex items-center justify-center text-slate-500 hover:text-red-600 transition-all text-base font-medium" title="删除">删</button>
+            </div>`;
         return `
-        <div class="post-card group bg-white dark:bg-slate-800 rounded-xl shadow-sm hover:shadow-md px-6 py-4 hover:bg-slate-50 dark:hover:bg-slate-700/50 transition-all">
-          <div class="flex items-center gap-14">
-            <div class="flex-shrink-0 w-24 pt-0.5">
+        <div class="post-card group bg-white dark:bg-slate-800 rounded-xl shadow-sm hover:shadow-md px-6 py-4 hover:bg-slate-50 dark:hover:bg-slate-700/50 transition-all ${isSelected ? 'ring-2 ring-brand-500' : ''}">
+          <div class="flex items-center gap-4">
+            ${checkboxHtml}
+            <div class="flex-shrink-0 w-28 pt-0.5">
               <div class="text-xs text-slate-900 dark:text-white font-medium">${formatDate(
                 post.pubDate
               )}</div>
-              <div class="text-xs mt-1">
-                <span class="inline-flex px-2 py-0.5 rounded-full text-xs font-medium ${statusClass}">${
+              <div class="flex flex-col gap-1 mt-1">
+                <span class="inline-flex px-2 py-0.5 rounded-full text-xs font-medium w-fit ${statusClass}">${
           post.draft ? '草稿' : '已发布'
         }</span>
+                ${getPushStatusHtml(post)}
               </div>
             </div>
             <div class="flex-1 min-w-0">
               <div class="flex items-center gap-2">
                 ${post.featured ? '<span class="inline-flex items-center flex-shrink-0 text-[10px] font-medium leading-4 px-1.5 py-px rounded bg-accent-50 text-accent-700 border border-accent-200 dark:bg-accent-900/40 dark:text-accent-300 dark:border-accent-800/60">精选</span>' : ''}
-                <span data-action="preview" data-slug="${encodedSlug}" class="text-base font-medium text-slate-900 dark:text-white truncate cursor-pointer hover:text-brand-600 dark:hover:text-brand-400 transition-colors">${escapeHtml(
+                <span data-action="${store.pushMode ? 'toggle-select' : 'preview'}" data-slug="${encodedSlug}" class="text-base font-medium text-slate-900 dark:text-white truncate cursor-pointer hover:text-brand-600 dark:hover:text-brand-400 transition-colors">${escapeHtml(
           post.title
         )}</span>
               </div>
-              <div class="mt-1.5 flex items-center gap-2 text-sm">
+              <div class="mt-1.5 flex items-center gap-2 text-sm flex-wrap">
                 <span class="inline-flex px-2 py-0.5 rounded-full text-xs font-medium bg-brand-100 text-brand-800 dark:bg-brand-900/40 dark:text-brand-300">${
                   CATEGORY_NAMES[post.category] || escapeHtml(post.category)
                 }</span>
                 ${tags}
               </div>
             </div>
-            <div class="flex-shrink-0 flex items-center gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
-              ${post.draft ? `<button data-action="publish" data-slug="${encodedSlug}" class="w-10 h-10 rounded-full bg-brand-600 hover:bg-brand-700 shadow-lg hover:shadow-xl hover:shadow-brand-500/30 flex items-center justify-center text-white transition-all text-base font-medium" title="发布">发</button>` : ''}
-              <button data-action="preview" data-slug="${encodedSlug}" class="w-10 h-10 rounded-full bg-white dark:bg-slate-700 shadow-lg hover:shadow-xl hover:shadow-brand-500/30 flex items-center justify-center text-slate-500 hover:text-brand-600 dark:hover:text-brand-400 transition-all text-base font-medium" title="预览">预</button>
-              <button data-action="edit" data-slug="${encodedSlug}" class="w-10 h-10 rounded-full bg-white dark:bg-slate-700 shadow-lg hover:shadow-xl hover:shadow-brand-500/30 flex items-center justify-center text-slate-500 hover:text-brand-600 dark:hover:text-brand-400 transition-all text-base font-medium" title="编辑">改</button>
-              <button data-action="delete" data-slug="${encodedSlug}" class="w-10 h-10 rounded-full bg-white dark:bg-slate-700 shadow-lg hover:shadow-xl hover:shadow-red-500/30 flex items-center justify-center text-slate-500 hover:text-red-600 transition-all text-base font-medium" title="删除">删</button>
-            </div>
+            ${actionButtons}
           </div>
         </div>`;
       })
@@ -337,6 +406,7 @@ export function initPosts({ router }) {
     else if (action === 'edit') router.navigate(`/edit/${encodeURIComponent(slug)}`);
     else if (action === 'publish') publishPost(slug);
     else if (action === 'delete') deletePost(slug);
+    else if (action === 'toggle-select') toggleSelect(slug);
   });
 
   pageNumbers.addEventListener('click', (e) => {
@@ -375,5 +445,106 @@ export function initPosts({ router }) {
     render();
   });
 
-  return { load, render };
+  // ---------- 推送选择模式 ----------
+  function updatePushBar() {
+    if (!store.pushMode) {
+      pushModeBar?.classList.add('hidden');
+      return;
+    }
+    pushModeBar?.classList.remove('hidden');
+    if (pushSelectedCount) {
+      pushSelectedCount.textContent = `已选 ${store.selectedSlugs.size} 篇`;
+    }
+    // 更新全选状态（空列表时不参与计算，避免空数组 every() 恒为 true 导致误勾选）
+    const filtered = getFiltered();
+    const start = (store.page - 1) * PAGE_SIZE;
+    const pageData = filtered.slice(start, start + PAGE_SIZE);
+    const allSelected = pageData.length > 0 && pageData.every((p) => store.selectedSlugs.has(p.slug));
+    if (pushSelectAll) pushSelectAll.checked = allSelected;
+  }
+
+  function enterPushMode() {
+    createPushBar();
+    store.pushMode = true;
+    store.selectedSlugs.clear();
+    if (pushSelectAll) pushSelectAll.checked = false;  // 重置全选状态
+    render();
+    updatePushBar();
+  }
+
+  function exitPushMode() {
+    store.pushMode = false;
+    store.selectedSlugs.clear();
+    render();
+    updatePushBar();
+    // 同步把 URL 上的 ?mode=push 清掉，否则刷新后 router 又会自动进入推送模式
+    if (router.route.name === 'posts' && router.route.query?.mode === 'push') {
+      router.replaceUrl('/posts');
+    }
+  }
+
+  function toggleSelect(slug) {
+    if (store.selectedSlugs.has(slug)) {
+      store.selectedSlugs.delete(slug);
+    } else {
+      store.selectedSlugs.add(slug);
+    }
+    render();
+    updatePushBar();
+  }
+
+  async function pushSelected() {
+    const slugs = Array.from(store.selectedSlugs);
+    if (slugs.length === 0) {
+      showToast('请先选择要推送的文章', 'error');
+      return;
+    }
+
+    pushConfirmBtn.disabled = true;
+    pushConfirmBtn.classList.add('opacity-60', 'cursor-not-allowed');
+
+    // 打开推送工作流弹窗：SSE 流式展示逐篇推送进度
+    // onDone：推送收尾，弹窗继续停留显示结果
+    // onClose：用户关闭弹窗后才刷新文章列表
+    const titleMap = {};
+    for (const slug of slugs) {
+      const post = store.posts.find((p) => p.slug === slug);
+      if (post) titleMap[slug] = post.title;
+    }
+    openPushModal(slugs, {
+      titles: titleMap,
+      onDone: () => {
+        pushConfirmBtn.disabled = false;
+        pushConfirmBtn.textContent = '推送选中文章';
+        pushConfirmBtn.classList.remove('opacity-60', 'cursor-not-allowed');
+      },
+      onClose: () => {
+        exitPushMode();
+        load();
+      },
+    });
+  }
+
+  // 监听路由变化，自动进入/退出推送模式
+  router.subscribe((route) => {
+    if (route.name === 'posts') {
+      if (route.query?.mode === 'push') {
+        enterPushMode();
+      } else {
+        exitPushMode();
+      }
+    }
+  });
+
+  // 顶部"推送"按钮：直接进入推送选择模式
+  document.getElementById('btn-push')?.addEventListener('click', enterPushMode);
+
+  // 重写 render，增加推送栏更新
+  const originalRender = render;
+  function renderWithPushBar() {
+    originalRender();
+    updatePushBar();
+  }
+
+  return { load, render: renderWithPushBar, enterPushMode };
 }

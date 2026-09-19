@@ -7,6 +7,10 @@ export const store = {
   page: 1,
   filteredCount: 0, // 当前筛选条件下的文章数（供分页跳转使用）
 
+  // ---- 多选推送模式 ----
+  pushMode: false, // 是否为推送选择模式
+  selectedSlugs: new Set(), // 选中的文章 slug 集合
+
   // ---- 编辑器 ----
   editingSlug: null, // 正在编辑文章的完整 slug（category/filename）；新建时为 null
   editorTags: [],

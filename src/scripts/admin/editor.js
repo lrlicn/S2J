@@ -63,7 +63,6 @@ export function initEditor({ router, refreshPosts }) {
   const fieldCategory = document.getElementById('field-category');
   const fieldDescription = document.getElementById('field-description');
   const fieldFeatured = document.getElementById('field-featured');
-  const fieldOrder = document.getElementById('field-order');
 
   const btnSaveDraft = document.getElementById('btn-save-draft');
   const btnSavePublish = document.getElementById('btn-save-publish');
@@ -229,7 +228,6 @@ export function initEditor({ router, refreshPosts }) {
       tags: [...tagInput.tags],
       description: fieldDescription.value,
       featured: fieldFeatured.checked,
-      order: fieldOrder.value,
       content: contentEl.value,
     };
   }
@@ -251,7 +249,6 @@ export function initEditor({ router, refreshPosts }) {
     tagInput.setTags(d.tags);
     fieldDescription.value = d.description || '';
     fieldFeatured.checked = d.featured === true;
-    fieldOrder.value = d.order || '999';
     contentEl.value = d.content || '';
   }
 
@@ -269,7 +266,7 @@ export function initEditor({ router, refreshPosts }) {
     fallbackSlug = ''; // 每篇新文章重新生成一次占位 slug
     fillForm({
       title: '', slug: '', category: 'java-basics', tags: [],
-      description: '', featured: false, order: '999', content: DEFAULT_CONTENT,
+      description: '', featured: false, content: DEFAULT_CONTENT,
     });
     store.slugManuallyEdited = false;
     store.hasUnsavedChanges = false;
@@ -299,7 +296,7 @@ export function initEditor({ router, refreshPosts }) {
     resetOutline();
     fillForm({
       title: '', slug: '', category: 'java-basics', tags: [],
-      description: '', featured: false, order: '999', content: '',
+      description: '', featured: false, content: '',
     });
     store.slugManuallyEdited = true;
     showModal();
@@ -318,7 +315,6 @@ export function initEditor({ router, refreshPosts }) {
         tags: Array.isArray(data.tags) ? data.tags : [],
         description: data.description || '',
         featured: data.featured === true,
-        order: data.order || 999,
         content: data.body || '',
       });
       store.slugManuallyEdited = true;
@@ -385,13 +381,13 @@ export function initEditor({ router, refreshPosts }) {
     });
   }
 
-  async function saveArticle(publish = false) {
+  async function saveArticle(options = {}) {
+    const { publish = false } = options;
     const title = fieldTitle.value.trim();
     const shortSlug = fieldSlug.value.trim();
     const category = fieldCategory.value;
     const description = fieldDescription.value.trim();
     const featured = fieldFeatured.checked;
-    const order = parseInt(fieldOrder.value, 10) || 999;
     const content = contentEl.value;
     const draft = !publish;
 
@@ -404,7 +400,6 @@ export function initEditor({ router, refreshPosts }) {
       now.getHours()
     )}:${pad(now.getMinutes())}:${pad(now.getSeconds())}`;
 
-    // 新建：slug 为不含分类的文件名；更新：slug 为 "分类/文件名"
     const payload = {
       title,
       slug: shortSlug,
@@ -413,8 +408,7 @@ export function initEditor({ router, refreshPosts }) {
       description,
       featured,
       draft,
-      published: !draft,
-      order,
+      published: publish,
       content,
       pubDate,
     };
@@ -430,7 +424,6 @@ export function initEditor({ router, refreshPosts }) {
       store.hasUnsavedChanges = false;
       updateDraftIndicator();
 
-      // 关键：新建保存成功后回写完整 slug，此后再次保存走更新（PUT），避免重复创建 409
       const fullSlug = res.slug || store.editingSlug || `${category}/${shortSlug}`;
       store.editingSlug = fullSlug;
 
@@ -441,7 +434,6 @@ export function initEditor({ router, refreshPosts }) {
       } else {
         showToast('草稿已保存');
         refreshPosts?.();
-        // 新建草稿后把 /edit/new 同步为真实地址（仅替换 URL，不重新打开编辑器）
         router.replaceUrl(`/edit/${encodeURIComponent(fullSlug)}`);
       }
     } catch (e) {
@@ -494,7 +486,12 @@ export function initEditor({ router, refreshPosts }) {
   document.getElementById('btn-editor-back').addEventListener('click', requestClose);
   document.getElementById('btn-close-editor').addEventListener('click', requestClose);
   btnSaveDraft.addEventListener('click', () => openSettingsModal('draft'));
-  btnSavePublish.addEventListener('click', () => openSettingsModal('publish'));
+
+  // 发表：直接触发
+  btnSavePublish.addEventListener('click', () => {
+    saveArticle({ publish: true });
+  });
+
   document.getElementById('btn-editor-settings').addEventListener('click', () => openSettingsModal('settings'));
   document.getElementById('btn-preview').addEventListener('click', previewArticle);
   outlineBtn.addEventListener('click', toggleOutline);
@@ -514,7 +511,7 @@ export function initEditor({ router, refreshPosts }) {
     updateWordCount();
     scheduleDraftSave();
   });
-  ['field-title', 'field-slug', 'field-description', 'field-order'].forEach((id) => {
+  ['field-title', 'field-slug', 'field-description'].forEach((id) => {
     document.getElementById(id).addEventListener('input', scheduleDraftSave);
   });
   ['field-category', 'field-featured'].forEach((id) => {

@@ -6,7 +6,7 @@ import { categories, getCategoryById, categoryNames } from '../../config/categor
 // 生成静态路径
 export async function getStaticPaths() {
   const allDocs = (await getCollection('docs', ({ data }) => !data.draft && data.published)).sort(
-    (a, b) => a.data.order - b.data.order
+    (a, b) => new Date(b.data.pubDate || 0).getTime() - new Date(a.data.pubDate || 0).getTime()
   );
   return allDocs.map((doc) => {
     // 计算字数和阅读时间（中文字符 + 英文单词，按 400 字/分钟估算）

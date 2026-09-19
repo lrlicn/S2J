@@ -11,20 +11,31 @@
 const EDIT_PREFIX = '/edit/';
 
 export function parseHash(hash) {
-  const path = (hash || '').replace(/^#/, '') || '/home';
-  if (path === '/home') return { name: 'home', path };
-  if (path === '/posts') return { name: 'posts', path };
-  if (path === '/edit/new') return { name: 'editor', mode: 'new', path };
+  const rawPath = (hash || '').replace(/^#/, '') || '/home';
+  // 分离 query 参数
+  const [pathPart, queryPart] = rawPath.split('?');
+  const path = pathPart;
+  const query = {};
+  if (queryPart) {
+    queryPart.split('&').forEach((pair) => {
+      const [key, value] = pair.split('=');
+      if (key) query[key] = decodeURIComponent(value || '');
+    });
+  }
+
+  if (path === '/home') return { name: 'home', path, query };
+  if (path === '/posts') return { name: 'posts', path, query };
+  if (path === '/edit/new') return { name: 'editor', mode: 'new', path, query };
   if (path.startsWith(EDIT_PREFIX)) {
     const raw = path.slice(EDIT_PREFIX.length);
-    if (!raw) return { name: 'unknown', path };
+    if (!raw) return { name: 'unknown', path, query };
     try {
-      return { name: 'editor', mode: 'edit', slug: decodeURIComponent(raw), path };
+      return { name: 'editor', mode: 'edit', slug: decodeURIComponent(raw), path, query };
     } catch {
-      return { name: 'unknown', path };
+      return { name: 'unknown', path, query };
     }
   }
-  return { name: 'unknown', path };
+  return { name: 'unknown', path, query };
 }
 
 export function createRouter() {
@@ -72,15 +83,17 @@ export function createRouter() {
      * @param {{replace?: boolean}} [opts] replace=true 时替换当前历史项并立即分发
      */
     navigate(path, opts = {}) {
-      const target = parseHash(path.startsWith('/') ? path : `/${path}`);
+      const fullPath = path.startsWith('/') ? path : `/${path}`;
+      const target = parseHash(fullPath);
       if (target.name === 'unknown') return;
-      if (target.path === current.path) return;
+      // 比较时用完整路径（含 query）
+      if (fullPath === current.path + (Object.keys(current.query).length ? '?' + new URLSearchParams(current.query).toString() : '')) return;
       if (opts.replace) {
-        window.history.replaceState(null, '', `#${target.path}`);
+        window.history.replaceState(null, '', `#${fullPath}`);
         dispatch(target);
       } else {
         sessionPushes += 1;
-        window.location.hash = target.path; // 触发 hashchange → dispatch
+        window.location.hash = fullPath; // 触发 hashchange → dispatch
       }
     },
 

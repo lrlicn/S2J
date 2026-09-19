@@ -1,0 +1,286 @@
+---
+title: "变量与数据类型 - 存储世界的基本单位"
+description: "深入理解 Java 的基本数据类型、引用数据类型、变量声明与赋值规则，以及类型转换的常见陷阱。"
+category: "java-basics"
+tags: ["Java", "入门", "基础语法", "数据类型"]
+pubDate: "2026-09-19 17:00:00"
+updatedDate: "2026-09-19"
+author: "S2J"
+featured: false
+draft: false
+published: true
+order: 2
+keywords: ["Java", "变量", "数据类型", "基本类型"]
+chapter: "入门基础"
+---
+
+变量是程序中存储数据的基本单位。这篇文章带你彻底搞懂 Java 的数据类型体系、变量的声明与使用规则。
+
+## 完整代码示例
+
+```java
+package dev.s2j.basics;
+
+/**
+ * VariablesAndTypes - Java 变量与数据类型示例
+ * 
+ * <p>演示了：
+ * <ul>
+ *   <li>8 种基本数据类型</li>
+ *   <li>变量的声明与赋值</li>
+ *   <li>类型自动转换与强制转换</li>
+ *   <li>常量与字面量</li>
+ * </ul>
+ * </p>
+ * 
+ * @author S2J
+ * @version 1.0
+ */
+public class VariablesAndTypes {
+
+    public static void main(String[] args) {
+        // ========== 1. 8 种基本数据类型 ==========
+        System.out.println("===== 基本数据类型 =====");
+        
+        // 整数类型
+        byte byteVar = 100;           // 8 位，范围 -128 ~ 127
+        short shortVar = 10000;        // 16 位，范围 -32768 ~ 32767
+        int intVar = 100000;          // 32 位，最常用的整数类型
+        long longVar = 10000000000L;  // 64 位，注意后面的 L
+        
+        System.out.printf("byte: %d%n", byteVar);
+        System.out.printf("short: %d%n", shortVar);
+        System.out.printf("int: %d%n", intVar);
+        System.out.printf("long: %d%n", longVar);
+        
+        // 浮点类型
+        float floatVar = 3.14f;        // 32 位，注意后面的 f
+        double doubleVar = 3.14159265358979;  // 64 位，更精确
+        
+        System.out.printf("float: %f%n", floatVar);
+        System.out.printf("double: %f%n", doubleVar);
+        
+        // 字符类型
+        char charVar = 'A';            // 单个字符，用单引号
+        char chineseChar = '中';        // Java 支持 Unicode，中文也可以
+        
+        System.out.printf("char: %c (ASCII: %d)%n", charVar, (int)charVar);
+        System.out.printf("中文字符: %c%n", chineseChar);
+        
+        // 布尔类型
+        boolean boolVar = true;        // 只有 true 和 false
+        boolean isJavaFun = false;
+        
+        System.out.printf("boolean: %b%n", boolVar);
+        System.out.printf("isJavaFun: %b%n", isJavaFun);
+        
+        // ========== 2. 变量的声明与赋值 ==========
+        System.out.println("\n===== 变量声明与赋值 =====");
+        
+        // 先声明，后赋值
+        int age;
+        age = 25;
+        System.out.println("年龄: " + age);
+        
+        // 声明的同时赋值
+        String name = "张三";
+        System.out.println("姓名: " + name);
+        
+        // 同时声明多个同类型变量
+        int a = 1, b = 2, c = 3;
+        System.out.printf("a=%d, b=%d, c=%d%n", a, b, c);
+        
+        // ========== 3. 类型转换 ==========
+        System.out.println("\n===== 类型转换 =====");
+        
+        // 自动类型转换（小范围 → 大范围）
+        int smallInt = 100;
+        long bigLong = smallInt;      // int 自动转 long
+        double doubleFromInt = smallInt;  // int 自动转 double
+        System.out.printf("int -> long: %d%n", bigLong);
+        System.out.printf("int -> double: %f%n", doubleFromInt);
+        
+        // 强制类型转换（大范围 → 小范围，可能丢失精度）
+        double pi = 3.99;
+        int intPi = (int) pi;         // 强制转换，小数部分被截断
+        System.out.printf("double 3.99 -> int: %d%n", intPi);  // 输出 3，不是 4!
+        
+        long bigNumber = 130;
+        byte smallByte = (byte) bigNumber;  // 超过 byte 范围会溢出
+        System.out.printf("long 130 -> byte: %d%n", smallByte);  // 输出 -126!
+        
+        // ========== 4. 常量 ==========
+        System.out.println("\n===== 常量 =====");
+        
+        final double PI = 3.14159265358979;  // final 修饰符表示常量
+        final int MAX_SIZE = 100;
+        
+        System.out.printf("PI = %f%n", PI);
+        System.out.printf("MAX_SIZE = %d%n", MAX_SIZE);
+        
+        // 下面这行代码会编译错误，因为常量不能修改
+        // PI = 3.14;  // error: cannot assign a value to final variable PI
+    }
+}
+```
+
+## 逐行解析
+
+### 1. 8 种基本数据类型
+
+Java 是**强类型语言**，每个变量都必须声明类型。Java 内置了 8 种基本数据类型：
+
+| 类型 | 占用空间 | 取值范围 | 默认值 | 示例 |
+|------|---------|---------|--------|------|
+| `byte` | 8 位 | -128 ~ 127 | 0 | `byte b = 100;` |
+| `short` | 16 位 | -32768 ~ 32767 | 0 | `short s = 10000;` |
+| `int` | 32 位 | -2^31 ~ 2^31-1 | 0 | `int i = 100000;` |
+| `long` | 64 位 | -2^63 ~ 2^63-1 | 0L | `long l = 1000000L;` |
+| `float` | 32 位 | 约 ±3.4E38 | 0.0f | `float f = 3.14f;` |
+| `double` | 64 位 | 约 ±1.7E308 | 0.0d | `double d = 3.14;` |
+| `char` | 16 位 | 0 ~ 65535 (Unicode) | '\u0000' | `char c = 'A';` |
+| `boolean` | 1 位 | true / false | false | `boolean b = true;` |
+
+> **记忆口诀**：四个整数（byte, short, int, long），两个浮点（float, double），一个字符（char），一个布尔（boolean）。
+
+### 2. 为什么 long 后面要加 L？
+
+```java
+long longVar = 10000000000L;
+```
+
+因为 Java 中整数字面量默认是 `int` 类型。如果数字太大超过了 int 的范围，不加 L 就会编译错误：
+
+```java
+// 错误！10000000000 超过了 int 范围
+long x = 10000000000;
+
+// 正确！加 L 表示这是 long 类型的字面量
+long y = 10000000000L;
+```
+
+> **最佳实践**：long 类型的字面量统一用大写 `L`，不要用小写 `l`，因为小写 l 看起来像数字 1，容易看错。
+
+### 3. 为什么 float 后面要加 f？
+
+```java
+float floatVar = 3.14f;
+```
+
+因为 Java 中小数字面量默认是 `double` 类型。double 转 float 是大范围转小范围，需要强制转换，所以要加 f 明确告诉编译器这是 float 类型。
+
+### 4. 自动类型转换规则
+
+小范围类型可以自动转换为大范围类型，不会丢失精度：
+
+```
+byte → short → int → long → float → double
+          ↑
+        char →
+```
+
+**转换规则**：
+- 如果两个操作数类型不同，先自动转换为同类型再计算
+- `int` 和 `long` 运算 → 结果是 `long`
+- `int` 和 `double` 运算 → 结果是 `double`
+- `byte` 和 `short` 运算 → 结果是 `int`（！）
+
+```java
+byte b1 = 10, b2 = 20;
+// byte b3 = b1 + b2;  // 错误！b1 + b2 的结果是 int
+byte b3 = (byte) (b1 + b2);  // 正确，需要强制转换
+```
+
+### 5. 强制类型转换的坑
+
+```java
+double pi = 3.99;
+int intPi = (int) pi;  // 结果是 3，不是 4！
+```
+
+强制转换**不是四舍五入**，而是直接截断小数部分。
+
+如果要四舍五入，应该用：
+```java
+int rounded = (int) Math.round(pi);  // 结果是 4
+```
+
+还有溢出问题：
+```java
+long bigNumber = 130;
+byte smallByte = (byte) bigNumber;  // 结果是 -126！
+```
+
+因为 byte 的范围是 -128 ~ 127，130 超过了 127，溢出后变成了 -126。
+
+### 6. 常量与 final 关键字
+
+```java
+final double PI = 3.14159265358979;
+```
+
+`final` 修饰的变量是常量，只能赋值一次，之后不能修改。
+
+**常量命名规范**：全大写，单词之间用下划线分隔，比如 `MAX_VALUE`、`PI`、`DEFAULT_TIMEOUT`。
+
+## 常见坑点
+
+### 坑点 1：整数除法
+
+```java
+int a = 5, b = 2;
+double result = a / b;
+System.out.println(result);  // 输出 2.0，不是 2.5！
+```
+
+因为两个 int 相除，结果还是 int（小数部分被丢弃），然后再赋值给 double。
+
+**正确写法**：
+```java
+double result = (double) a / b;  // 输出 2.5
+```
+
+### 坑点 2：浮点数精度问题
+
+```java
+double d1 = 0.1;
+double d2 = 0.2;
+System.out.println(d1 + d2);  // 输出 0.30000000000000004，不是 0.3！
+```
+
+浮点数在计算机中是二进制存储的，很多十进制小数无法精确表示。如果需要高精度计算（比如金额），应该用 `BigDecimal` 类。
+
+### 坑点 3：char 类型的特殊性
+
+```java
+char c = 'A';
+int i = c;  // char 可以自动转 int，得到 ASCII 码 65
+System.out.println(i);  // 输出 65
+
+char c2 = 65;  // int 可以直接赋值给 char（在范围内）
+System.out.println(c2);  // 输出 A
+```
+
+char 本质上是一个 16 位的无符号整数，存储的是 Unicode 码点。
+
+## 最佳实践
+
+1. **整数优先用 int**：除非需要更大的范围，否则用 int 就够了
+2. **浮点优先用 double**：float 精度不够，现在也很少用了
+3. **金额计算用 BigDecimal**：不要用 float 或 double 计算钱
+4. **常量用 final + 全大写命名**：提高可读性，避免魔法数字
+5. **尽量避免强制类型转换**：如果必须用，确认不会溢出或丢失精度
+
+## 小结
+
+这篇文章我们学习了：
+
+- Java 的 8 种基本数据类型及其取值范围
+- 变量的声明、赋值和使用规则
+- 自动类型转换和强制类型转换的区别
+- 类型转换中的常见坑点（精度丢失、溢出）
+- 常量的定义和使用
+
+掌握了数据类型，我们才能更好地理解下一篇要讲的**运算符与表达式**。
+
+> **S2J 理念**：不要只背概念，动手写代码跑一遍。试试故意写错类型，看看编译器报什么错，这比看书印象深刻多了。

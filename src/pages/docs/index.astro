@@ -1,11 +1,11 @@
----
+﻿---
 import { getCollection, type CollectionEntry } from 'astro:content';
 import Layout from '@layouts/Layout.astro';
 import { categories, getCategoryById } from '../../config/categories';
 
 // 获取所有已发布文档
 const allDocs = (await getCollection('docs', ({ data }) => !data.draft && data.published)).sort(
-  (a, b) => a.data.order - b.data.order
+  (a, b) => new Date(b.data.pubDate || 0).getTime() - new Date(a.data.pubDate || 0).getTime()
 );
 
 // 按分类分组

@@ -10,6 +10,7 @@ import { showToast } from './toast.js';
 import { initPosts } from './posts.js';
 import { initEditor } from './editor.js';
 import { initImport } from './import.js';
+import { initGithub } from './github.js';
 
 const router = createRouter();
 
@@ -17,6 +18,7 @@ initTheme();
 const posts = initPosts({ router });
 const editor = initEditor({ router, refreshPosts: posts.load });
 const importer = initImport({ router });
+initGithub(router);
 
 const homeEl = document.getElementById('admin-home');
 const managementEl = document.getElementById('admin-management');

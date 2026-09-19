@@ -47,3 +47,7 @@ Desktop.ini
 
 # netlify
 .netlify
+
+# admin local config (contains GitHub token)
+admin-config.json
+admin-push-state.json
