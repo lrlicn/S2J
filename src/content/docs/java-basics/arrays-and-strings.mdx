@@ -1,0 +1,374 @@
+---
+title: "数组与字符串 - 批量数据的处理"
+description: "掌握 Java 数组的定义、遍历和常用操作，以及 String 类的常用方法和字符串不可变性。"
+category: "java-basics"
+tags: ["Java", "入门", "基础语法", "数组", "字符串"]
+pubDate: "2026-09-19 17:40:00"
+updatedDate: "2026-09-19"
+author: "S2J"
+featured: false
+draft: false
+published: true
+order: 6
+keywords: ["Java", "数组", "String", "字符串", "数组遍历"]
+chapter: "入门基础"
+---
+
+数组是存储批量同类型数据的容器，字符串是程序中最常用的数据类型。这篇文章带你掌握它们的核心用法。
+
+## 完整代码示例
+
+```java
+package dev.s2j.basics;
+
+import java.util.Arrays;
+
+/**
+ * ArraysAndStrings - 数组与字符串示例
+ * 
+ * <p>演示了：
+ * <ul>
+ *   <li>数组的定义、初始化和遍历</li>
+ *   <li>数组的常用操作（排序、查找、复制）</li>
+ *   <li>String 类的常用方法</li>
+ *   <li>字符串不可变性</li>
+ *   <li>StringBuilder 的使用场景</li>
+ * </ul>
+ * </p>
+ * 
+ * @author S2J
+ * @version 1.0
+ */
+public class ArraysAndStrings {
+
+    public static void main(String[] args) {
+        // ========== 1. 数组的定义与初始化 ==========
+        System.out.println("===== 数组的定义与初始化 =====");
+        
+        // 方式一：先声明，再创建
+        int[] arr1 = new int[5];  // 长度为 5 的数组，默认值全是 0
+        arr1[0] = 10;
+        arr1[1] = 20;
+        arr1[2] = 30;
+        System.out.println("arr1: " + Arrays.toString(arr1));
+        
+        // 方式二：声明的同时初始化
+        int[] arr2 = {1, 2, 3, 4, 5};
+        System.out.println("arr2: " + Arrays.toString(arr2));
+        
+        // 方式三：new + 大括号
+        int[] arr3 = new int[]{100, 200, 300};
+        System.out.println("arr3: " + Arrays.toString(arr3));
+        
+        // 数组长度
+        System.out.println("arr2 的长度: " + arr2.length);
+        
+        // ========== 2. 数组遍历 ==========
+        System.out.println("\n===== 数组遍历 =====");
+        
+        // 普通 for 循环
+        System.out.print("普通 for 遍历: ");
+        for (int i = 0; i < arr2.length; i++) {
+            System.out.print(arr2[i] + " ");
+        }
+        System.out.println();
+        
+        // 增强 for 循环
+        System.out.print("增强 for 遍历: ");
+        for (int num : arr2) {
+            System.out.print(num + " ");
+        }
+        System.out.println();
+        
+        // ========== 3. 数组常用操作 ==========
+        System.out.println("\n===== 数组常用操作 =====");
+        
+        int[] numbers = {5, 2, 8, 1, 9, 3};
+        
+        // 排序
+        Arrays.sort(numbers);
+        System.out.println("排序后: " + Arrays.toString(numbers));
+        
+        // 查找（二分查找，要求数组已排序）
+        int index = Arrays.binarySearch(numbers, 8);
+        System.out.println("8 的位置: " + index);
+        
+        // 数组复制
+        int[] copy = Arrays.copyOf(numbers, numbers.length);
+        System.out.println("复制的数组: " + Arrays.toString(copy));
+        
+        // 填充
+        int[] filled = new int[5];
+        Arrays.fill(filled, -1);
+        System.out.println("全部填充为 -1: " + Arrays.toString(filled));
+        
+        // ========== 4. 二维数组 ==========
+        System.out.println("\n===== 二维数组 =====");
+        
+        int[][] matrix = {
+            {1, 2, 3},
+            {4, 5, 6},
+            {7, 8, 9}
+        };
+        
+        System.out.println("二维数组:");
+        for (int row = 0; row < matrix.length; row++) {
+            for (int col = 0; col < matrix[row].length; col++) {
+                System.out.print(matrix[row][col] + " ");
+            }
+            System.out.println();
+        }
+        
+        // ========== 5. String 常用方法 ==========
+        System.out.println("\n===== String 常用方法 =====");
+        
+        String str = "Hello, Java World!";
+        
+        System.out.println("字符串: \"" + str + "\"");
+        System.out.println("长度: " + str.length());
+        System.out.println("第一个字符: " + str.charAt(0));
+        System.out.println("最后一个字符: " + str.charAt(str.length() - 1));
+        System.out.println("转大写: " + str.toUpperCase());
+        System.out.println("转小写: " + str.toLowerCase());
+        System.out.println("子串(7~11): " + str.substring(7, 11));  // 左闭右开
+        System.out.println("替换 Java 为 Python: " + str.replace("Java", "Python"));
+        System.out.println("是否以 Hello 开头: " + str.startsWith("Hello"));
+        System.out.println("是否以 ! 结尾: " + str.endsWith("!"));
+        System.out.println("Java 的位置: " + str.indexOf("Java"));
+        System.out.println("去空格: \"" + "  hello  ".trim() + "\"");
+        System.out.println("分割: " + Arrays.toString("a,b,c,d".split(",")));
+        
+        // ========== 6. 字符串不可变性 ==========
+        System.out.println("\n===== 字符串不可变性 =====");
+        
+        String s1 = "Hello";
+        String s2 = s1;
+        s1 = s1 + " World";  // 这行实际上创建了新字符串
+        
+        System.out.println("s1 = " + s1);      // Hello World
+        System.out.println("s2 = " + s2);      // Hello（没变！）
+        System.out.println("s1 == s2: " + (s1 == s2));  // false
+        
+        // ========== 7. StringBuilder ==========
+        System.out.println("\n===== StringBuilder：高效拼接 =====");
+        
+        // 用 + 拼接（低效，会创建很多临时对象）
+        String result1 = "";
+        for (int i = 0; i < 5; i++) {
+            result1 += i;  // 每次都创建新字符串
+        }
+        System.out.println("用 + 拼接: " + result1);
+        
+        // 用 StringBuilder（高效，在原对象上修改）
+        StringBuilder sb = new StringBuilder();
+        for (int i = 0; i < 5; i++) {
+            sb.append(i);
+        }
+        System.out.println("用 StringBuilder 拼接: " + sb.toString());
+    }
+}
+```
+
+## 逐行解析
+
+### 1. 数组的本质
+
+数组是**固定长度**的同类型数据容器。一旦创建，长度就不能改了。
+
+```java
+int[] arr = new int[5];  // 长度 5，不能改
+```
+
+**关键点**：
+- 数组下标从 **0** 开始，到 `length - 1` 结束
+- 访问越界会抛 `ArrayIndexOutOfBoundsException`
+- 基本类型数组的默认值：数字 0，char '\u0000'，boolean false
+- 引用类型数组的默认值：null
+
+### 2. 数组初始化的三种方式
+
+```java
+// 方式一：指定长度，默认值
+int[] a = new int[5];  // [0, 0, 0, 0, 0]
+
+// 方式二：直接给值
+int[] b = {1, 2, 3};   // [1, 2, 3]
+
+// 方式三：new + 大括号（可以匿名使用）
+int[] c = new int[]{1, 2, 3};
+```
+
+> **注意**：方式二只能在声明的同时用，不能先声明再赋值：
+> ```java
+> int[] arr;
+> arr = {1, 2, 3};  // 错误！
+> arr = new int[]{1, 2, 3};  // 正确
+> ```
+
+### 3. Arrays 工具类
+
+`java.util.Arrays` 提供了很多数组操作的静态方法：
+
+| 方法 | 作用 |
+|------|------|
+| `Arrays.toString(arr)` | 把数组转成字符串，方便打印 |
+| `Arrays.sort(arr)` | 升序排序 |
+| `Arrays.binarySearch(arr, key)` | 二分查找（必须先排序） |
+| `Arrays.copyOf(original, newLength)` | 复制数组 |
+| `Arrays.fill(arr, val)` | 全部填充为某个值 |
+| `Arrays.equals(a, b)` | 比较两个数组内容是否相等 |
+
+> **打印数组的坑**：直接 `System.out.println(arr)` 会打印 `[I@1b6d3586` 这种地址，要用 `Arrays.toString(arr)`。
+
+### 4. 二维数组
+
+Java 的二维数组本质上是"数组的数组"，每行的长度可以不一样：
+
+```java
+int[][] jagged = {
+    {1},
+    {2, 3},
+    {4, 5, 6}
+};
+```
+
+这叫**不规则数组**（jagged array），每行长度不同。
+
+### 5. String 常用方法
+
+| 方法 | 作用 | 示例 |
+|------|------|------|
+| `length()` | 字符串长度 | `"hello".length()` → 5 |
+| `charAt(i)` | 获取第 i 个字符 | `"hello".charAt(0)` → 'h' |
+| `substring(begin, end)` | 子串（左闭右开） | `"hello".substring(1, 3)` → "el" |
+| `indexOf(str)` | 查找子串位置 | `"hello".indexOf("ll")` → 2 |
+| `equals(s)` | 比较内容 | `"a".equals(b)` |
+| `equalsIgnoreCase(s)` | 忽略大小写比较 | |
+| `toUpperCase()` | 转大写 | |
+| `toLowerCase()` | 转小写 | |
+| `trim()` | 去掉首尾空格 | |
+| `replace(old, new)` | 替换 | |
+| `startsWith(prefix)` | 是否以...开头 | |
+| `endsWith(suffix)` | 是否以...结尾 | |
+| `split(regex)` | 分割成数组 | |
+| `toCharArray()` | 转成 char 数组 | |
+
+> **重要**：`substring` 是**左闭右开**的！
+> ```java
+> "hello".substring(1, 3)  // 索引 1 和 2，结果是 "el"，不是 "ell"
+> ```
+
+### 6. 字符串不可变性
+
+这是 Java 字符串最重要的特性：**String 对象一旦创建，就不能修改**。
+
+```java
+String s = "Hello";
+s = s + " World";
+```
+
+第二行不是修改了原来的字符串，而是**创建了一个新的字符串对象**，然后让 s 指向新对象。原来的 "Hello" 还在内存中，只是没人引用它了。
+
+**这就是为什么**：
+- 字符串可以安全地共享（比如字符串常量池）
+- 频繁拼接字符串会很低效（每次都创建新对象）
+
+### 7. StringBuilder
+
+如果需要频繁修改字符串，用 `StringBuilder`：
+
+```java
+StringBuilder sb = new StringBuilder();
+sb.append("Hello");
+sb.append(" ");
+sb.append("World");
+String result = sb.toString();
+```
+
+**StringBuilder 的常用方法**：
+
+| 方法 | 作用 |
+|------|------|
+| `append(str)` | 末尾追加 |
+| `insert(pos, str)` | 指定位置插入 |
+| `delete(start, end)` | 删除子串 |
+| `reverse()` | 反转 |
+| `toString()` | 转成 String |
+
+> **什么时候用 StringBuilder？**
+> - 循环里拼接字符串 → 用 StringBuilder
+> - 少量几次拼接 → 用 + 就行，编译器会自动优化
+> - 单线程场景 → StringBuilder；多线程 → StringBuffer
+
+## 常见坑点
+
+### 坑点 1：数组越界
+
+```java
+int[] arr = {1, 2, 3};
+System.out.println(arr[3]);  // 错误！下标最大是 2
+```
+
+数组下标从 0 开始，长度为 n 的数组，合法下标是 `0 ~ n-1`。
+
+### 坑点 2：== 和 equals
+
+```java
+String a = new String("hello");
+String b = new String("hello");
+System.out.println(a == b);       // false，比地址
+System.out.println(a.equals(b));  // true，比内容
+```
+
+字符串比较永远用 `equals()`。
+
+### 坑点 3：substring 的边界
+
+```java
+String s = "hello";
+s.substring(1, 1);  // 空字符串 ""，不是 "h"
+```
+
+左闭右开，begin 和 end 相等时返回空串。
+
+### 坑点 4：字符串拼接的性能
+
+```java
+// 不好：循环里用 +
+String result = "";
+for (int i = 0; i < 10000; i++) {
+    result += i;  // 每次都创建新对象，很慢
+}
+
+// 好：用 StringBuilder
+StringBuilder sb = new StringBuilder();
+for (int i = 0; i < 10000; i++) {
+    sb.append(i);
+}
+String result = sb.toString();
+```
+
+一万次循环，用 + 拼接可能要几秒，用 StringBuilder 只要几毫秒。
+
+## 最佳实践
+
+1. **字符串比较用 equals**：永远不要用 == 比字符串
+2. **循环拼接用 StringBuilder**：不要用 +=
+3. **打印数组用 Arrays.toString**：不要直接打印数组变量
+4. **数组长度用 length 属性**：不是 length() 方法（那是字符串的）
+5. **优先用增强 for 遍历**：不需要下标时，用 foreach 更简洁
+
+## 小结
+
+这篇文章我们学习了：
+
+- 数组的定义、初始化和遍历方式
+- Arrays 工具类的常用方法
+- 二维数组的使用
+- String 类的常用方法
+- 字符串不可变性的原理
+- StringBuilder 的适用场景
+
+数组和字符串是编程中最常用的数据结构，一定要熟练掌握。到这里，Java 基础语法的核心部分就讲完了，接下来我们可以学一些更实用的内容，比如集合框架、常用类、异常处理等等。
+
+> **S2J 理念**：学完基础语法后，找一个小项目练手，比如学生成绩管理系统，把变量、条件、循环、数组都用一遍，比看十篇文章都有用。
