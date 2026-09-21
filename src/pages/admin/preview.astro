@@ -22,7 +22,7 @@ import Layout from '../../layouts/Layout.astro';
       </header>
 
       <!-- 文章内容 -->
-      <div id="preview-content" class="prose prose-slate dark:prose-invert max-w-none prose-headings:scroll-mt-24 prose-a:text-brand-600 dark:prose-a:text-brand-400 prose-pre:bg-code-bg prose-pre:border prose-pre:border-code-border"></div>
+      <div id="preview-content" class="prose prose-slate dark:prose-invert max-w-none prose-headings:scroll-mt-24 prose-a:text-brand-600 dark:prose-a:text-brand-400"></div>
 
       <!-- 底部操作按钮 -->
       <div class="mt-12 pt-8 border-t border-slate-200 dark:border-slate-700 text-center">
@@ -33,6 +33,32 @@ import Layout from '../../layouts/Layout.astro';
 
   <script>
     import { marked } from 'marked';
+    import { markedHighlight } from 'marked-highlight';
+    import hljs from 'highlight.js/lib/core';
+    import langJava from 'highlight.js/lib/languages/java';
+    import langJavascript from 'highlight.js/lib/languages/javascript';
+    import langTypescript from 'highlight.js/lib/languages/typescript';
+    import langBash from 'highlight.js/lib/languages/bash';
+    import langJson from 'highlight.js/lib/languages/json';
+    import langXml from 'highlight.js/lib/languages/xml';
+    import langCss from 'highlight.js/lib/languages/css';
+    import langYaml from 'highlight.js/lib/languages/yaml';
+    import langDiff from 'highlight.js/lib/languages/diff';
+    import langSql from 'highlight.js/lib/languages/sql';
+
+    [['java', langJava], ['javascript', langJavascript], ['typescript', langTypescript],
+     ['bash', langBash], ['json', langJson], ['xml', langXml], ['css', langCss],
+     ['yaml', langYaml], ['diff', langDiff], ['sql', langSql]]
+      .forEach(([name, mod]) => hljs.registerLanguage(name, mod));
+
+    marked.use(markedHighlight({
+      langPrefix: 'hljs language-',
+      highlight(code, lang) {
+        const language = hljs.getLanguage(lang) ? lang : 'plaintext';
+        try { return hljs.highlight(code, { language }).value; }
+        catch { return code; }
+      },
+    }));
 
     // 从 sessionStorage 读取预览数据
     const raw = sessionStorage.getItem('s2j_preview_data');
@@ -76,12 +102,17 @@ import Layout from '../../layouts/Layout.astro';
         contentEl.innerHTML = marked.parse(data.content);
       }
 
-      // 编辑按钮：跳回 admin 并打开编辑器（使用 hash 路由）
+      // 编辑按钮：
+      //   已保存文章（有 slug）→ 在当前标签页打开该文章的编辑页；
+      //   新建未保存（无 slug）→ 预览页是编辑器 window.open 出来的子页，直接关闭本页，
+      //     让用户回到原编辑器标签页继续写（原页内容仍在，不丢稿）。
       document.getElementById('btn-edit').addEventListener('click', () => {
         if (data.slug) {
           window.location.href = `/admin#/edit/${encodeURIComponent(data.slug)}`;
         } else {
-          window.location.href = '/admin#/home';
+          window.close();
+          // 若浏览器拦截了 close（非脚本打开的预览页），兜底回到新建编辑器
+          setTimeout(() => { if (!window.closed) window.location.href = '/admin#/edit/new'; }, 150);
         }
       });
 
@@ -89,4 +120,77 @@ import Layout from '../../layouts/Layout.astro';
       sessionStorage.removeItem('s2j_preview_data');
     }
   </script>
+
+  <style is:global>
+    /* 代码块：现代风高亮配色（亮色柔和 · 暗色 Tokyo Night） */
+    #preview-content pre {
+      background: #f8fafc;
+      border: 1px solid #e2e8f0;
+      border-radius: 0.5rem;
+      margin: 1rem 0;
+      overflow: auto;
+      padding: 1rem;
+    }
+    html.dark #preview-content pre {
+      background: #1a1b26;
+      border-color: #292e42;
+    }
+    #preview-content code.hljs { background: transparent; padding: 0; }
+    #preview-content .hljs { color: #1f2328; }
+    html.dark #preview-content .hljs { color: #c0caf5; }
+
+    /* 关键字 / 内置类型：紫 → 粉紫 */
+    #preview-content .hljs-keyword,
+    #preview-content .hljs-selector-tag,
+    #preview-content .hljs-built_in { color: #8839ef; font-weight: 500; }
+    html.dark #preview-content .hljs-keyword,
+    html.dark #preview-content .hljs-selector-tag,
+    html.dark #preview-content .hljs-built_in { color: #bb9af7; }
+
+    /* 字符串：柔绿 */
+    #preview-content .hljs-string,
+    #preview-content .hljs-doctag { color: #2f7d4f; }
+    html.dark #preview-content .hljs-string,
+    html.dark #preview-content .hljs-doctag { color: #9ece6a; }
+
+    /* 数字 / 字面量：蓝 → 橙 */
+    #preview-content .hljs-number,
+    #preview-content .hljs-literal,
+    #preview-content .hljs-symbol { color: #1e66f5; }
+    html.dark #preview-content .hljs-number,
+    html.dark #preview-content .hljs-literal,
+    html.dark #preview-content .hljs-symbol { color: #ff9e64; }
+
+    /* 注释：灰斜体 */
+    #preview-content .hljs-comment,
+    #preview-content .hljs-quote { color: #7c7f93; font-style: italic; }
+    html.dark #preview-content .hljs-comment,
+    html.dark #preview-content .hljs-quote { color: #565f89; font-style: italic; }
+
+    /* 函数 / 类名：蓝紫 → 蓝 */
+    #preview-content .hljs-title,
+    #preview-content .hljs-title.function_,
+    #preview-content .hljs-section { color: #7287fd; }
+    html.dark #preview-content .hljs-title,
+    html.dark #preview-content .hljs-title.function_,
+    html.dark #preview-content .hljs-section { color: #7aa2f7; }
+
+    /* 变量 / 属性：粉 → 青 */
+    #preview-content .hljs-attr,
+    #preview-content .hljs-attribute,
+    #preview-content .hljs-variable,
+    #preview-content .hljs-template-variable { color: #d20f39; }
+    html.dark #preview-content .hljs-attr,
+    html.dark #preview-content .hljs-attribute,
+    html.dark #preview-content .hljs-variable,
+    html.dark #preview-content .hljs-template-variable { color: #7dcfff; }
+
+    /* 标签 / 选择器：蓝 → 绿 */
+    #preview-content .hljs-name,
+    #preview-content .hljs-selector-id,
+    #preview-content .hljs-selector-class { color: #1e66f5; }
+    html.dark #preview-content .hljs-name,
+    html.dark #preview-content .hljs-selector-id,
+    html.dark #preview-content .hljs-selector-class { color: #9ece6a; }
+  </style>
 </Layout>

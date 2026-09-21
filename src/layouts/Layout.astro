@@ -1,4 +1,4 @@
-﻿---
+---
 import '@styles/global.css';
 import { categories, getCategoryById } from '../config/categories';
 import Search from '../components/Search.astro';
@@ -432,8 +432,7 @@ function isNavActive(path: string): boolean {
         if (pre.querySelector('.copy-btn')) return;
 
         const code = pre.querySelector('code');
-        const langMatch = code?.className.match(/language-(\w+)/);
-        const lang = langMatch ? langMatch[1].toUpperCase() : '';
+        const lang = (pre.getAttribute('data-language') || (code?.className.match(/language-(\w+)/) || [])[1] || '').toUpperCase();
 
         // 行号
         if (code) {

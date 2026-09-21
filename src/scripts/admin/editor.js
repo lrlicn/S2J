@@ -7,7 +7,7 @@
 import { api } from './api.js';
 import { store, resetEditorState } from './store.js';
 import { showToast } from './toast.js';
-import { PREVIEW_STORAGE_KEY } from './config.js';
+import { PREVIEW_STORAGE_KEY, CATEGORY_NAMES } from './config.js';
 import { saveDraft, loadDraft, hasDraft, clearDraft } from './draft.js';
 import { createTagInput } from './tags.js';
 import { initMarkdownEditor } from './markdown.js';
@@ -53,64 +53,85 @@ export function initEditor({ router, refreshPosts }) {
   // ---------- DOM ----------
   const modal = document.getElementById('editor-modal');
   const contentEl = document.getElementById('editor-content');
-  const previewEl = document.getElementById('editor-preview');
   const wordCountEl = document.getElementById('word-count');
   const draftIndicator = document.getElementById('draft-indicator');
   const outlineBtn = document.getElementById('btn-outline');
+  const outlinePanel = document.getElementById('outline-panel');
 
   const fieldTitle = document.getElementById('field-title');
   const fieldSlug = document.getElementById('field-slug');
   const fieldCategory = document.getElementById('field-category');
   const fieldDescription = document.getElementById('field-description');
   const fieldFeatured = document.getElementById('field-featured');
+  const descCountEl = document.getElementById('desc-count');
+
+  // 左栏卡片预览
+  const cardTitle = document.getElementById('preview-card-title');
+  const cardDesc = document.getElementById('preview-card-desc');
+  const cardCategory = document.getElementById('preview-card-category');
+  const cardFeatured = document.getElementById('preview-card-featured');
+  const cardTags = document.getElementById('preview-card-tags');
+
+  function escapeHtml(s) {
+    return String(s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+  }
 
   const btnSaveDraft = document.getElementById('btn-save-draft');
   const btnSavePublish = document.getElementById('btn-save-publish');
-
-  const settingsModal = document.getElementById('settings-modal');
-  const settingsContent = document.getElementById('settings-modal-content');
-  const settingsOverlay = document.getElementById('settings-modal-overlay');
-  const btnSettingsConfirm = document.getElementById('btn-settings-confirm');
 
   // ---------- 子模块 ----------
   const tagInput = createTagInput({
     container: document.getElementById('tag-input-container'),
     input: document.getElementById('tag-input-field'),
-    onChange: scheduleDraftSave,
+    onChange: () => { scheduleDraftSave(); updateCardPreview(); },
     onDuplicate: () => showToast('标签已存在', 'error'),
   });
   const md = initMarkdownEditor({ textarea: contentEl, toolbar: document.querySelector('.md-toolbar'), uploadImage });
 
-  let markedRender = null;
   let showOutline = false;
   let outlineItems = [];
   let draftTimer = null;
   let openSession = 0; // 用于丢弃过期的异步加载结果
 
-  import('marked')
-    .then(({ marked }) => {
-      marked.setOptions({ breaks: true, gfm: true });
-      markedRender = marked.parse.bind(marked);
-      if (!modal.classList.contains('hidden')) updatePreview();
-    })
-    .catch(() => {
-      markedRender = (text) => `<pre class="whitespace-pre-wrap text-sm">${text}</pre>`;
-    });
-
-  // ---------- 预览 / 字数 ----------
-  function updatePreview() {
-    if (showOutline) {
-      renderOutline();
-      return;
+  // ---------- 左栏卡片预览（标题/摘要/分类/标签/精选 实时联动） ----------
+  function updateCardPreview() {
+    cardTitle.textContent = fieldTitle.value.trim() || '未命名文章';
+    cardDesc.textContent = fieldDescription.value.trim() || '填写摘要后，这里会显示文章简介…';
+    cardCategory.textContent = CATEGORY_NAMES[fieldCategory.value] || fieldCategory.value || '未分类';
+    cardFeatured.classList.toggle('hidden', !fieldFeatured.checked);
+    if (cardTags) {
+      const tags = [...tagInput.tags];
+      cardTags.innerHTML = tags.length
+        ? tags.map(t => `<span class="inline-flex px-2 py-0.5 rounded-full text-xs font-medium bg-brand-100 text-brand-800 dark:bg-brand-900/40 dark:text-brand-300">${escapeHtml(t)}</span>`).join('')
+        : '';
     }
-    previewEl.innerHTML = markedRender
-      ? markedRender(contentEl.value)
-      : `<pre class="whitespace-pre-wrap text-sm">${contentEl.value}</pre>`;
+    if (showOutline) renderOutline();
+  }
+
+  // ---------- 正文 textarea 自适应高度：撑满首屏，下滚才见设置区 ----------
+  const mainCard = contentEl.parentElement;
+  function autoGrow() {
+    contentEl.style.height = 'auto';
+    const minH = mainCard ? mainCard.clientHeight : 300;
+    contentEl.style.height = Math.max(contentEl.scrollHeight, minH) + 'px';
+  }
+
+  // 左卡片与正文顶部对齐：占位高度 = 工具栏高度 + gap-4(16px)
+  function alignAside() {
+    const spacer = document.getElementById('aside-toolbar-spacer');
+    const toolbar = document.querySelector('.md-toolbar');
+    if (spacer && toolbar) {
+      spacer.style.height = (toolbar.offsetHeight + 16) + 'px';
+    }
   }
 
   function updateWordCount() {
     const count = contentEl.value.replace(/\s/g, '').length;
     wordCountEl.textContent = `${count.toLocaleString()} 字`;
+  }
+
+  function updateDescCount() {
+    if (descCountEl) descCountEl.textContent = fieldDescription.value.length;
   }
 
   function updateDraftIndicator() {
@@ -134,25 +155,25 @@ export function initEditor({ router, refreshPosts }) {
   function renderOutline() {
     outlineItems = generateOutline();
     if (outlineItems.length === 0) {
-      previewEl.innerHTML =
-        '<div class="text-center text-slate-400 dark:text-slate-500 py-12"><p class="text-sm">暂无标题</p><p class="text-xs mt-1">使用 #、##、### 创建标题</p></div>';
+      outlinePanel.innerHTML =
+        '<div class="text-center text-slate-400 dark:text-slate-500 py-8 text-sm">暂无标题，使用 #、##、### 创建</div>';
       return;
     }
-    previewEl.innerHTML = `
-      <div class="p-4">
-        <h3 class="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-3">文章大纲（${outlineItems.length}）</h3>
-        <div class="space-y-1">
+    outlinePanel.innerHTML = `
+      <div class="p-1">
+        <h3 class="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-2">大纲（${outlineItems.length}）</h3>
+        <div class="space-y-0.5">
           ${outlineItems
             .map(
               (item, i) => `
-            <button class="outline-item w-full text-left px-2 py-1.5 rounded hover:bg-slate-100 dark:hover:bg-slate-700/50 transition-colors text-sm text-slate-700 dark:text-slate-300 truncate" data-index="${i}" style="padding-left: ${(item.level - 1) * 16 + 8}px">
-              <span class="text-slate-400 dark:text-slate-500 mr-1.5">H${item.level}</span>${item.text}
+            <button class="outline-item w-full text-left px-2 py-1 rounded hover:bg-slate-100 dark:hover:bg-slate-700/50 transition-colors text-xs text-slate-700 dark:text-slate-300 truncate" data-index="${i}" style="padding-left: ${(item.level - 1) * 14 + 8}px">
+              <span class="text-slate-400 dark:text-slate-500 mr-1">H${item.level}</span>${item.text}
             </button>`
             )
             .join('')}
         </div>
       </div>`;
-    previewEl.querySelectorAll('.outline-item').forEach((btn) => {
+    outlinePanel.querySelectorAll('.outline-item').forEach((btn) => {
       btn.addEventListener('click', () => {
         const item = outlineItems[parseInt(btn.dataset.index, 10)];
         if (!item) return;
@@ -176,7 +197,7 @@ export function initEditor({ router, refreshPosts }) {
       outlineBtn.classList.remove(
         'text-brand-600', 'dark:text-brand-400', 'bg-brand-50', 'dark:bg-brand-900/30'
       );
-      updatePreview();
+      outlinePanel.innerHTML = '';
     }
   }
 
@@ -185,38 +206,6 @@ export function initEditor({ router, refreshPosts }) {
     outlineBtn.classList.remove(
       'text-brand-600', 'dark:text-brand-400', 'bg-brand-50', 'dark:bg-brand-900/30'
     );
-  }
-
-  // ---------- 文章设置弹窗 ----------
-  let settingsAction = 'draft';
-  function openSettingsModal(action) {
-    settingsAction = action;
-    if (action === 'settings') {
-      // 纯查看/修改设置：确认按钮只关闭弹窗，不触发保存
-      btnSettingsConfirm.textContent = '完成';
-      btnSettingsConfirm.className =
-        'px-4 py-2 text-sm font-medium bg-brand-600 hover:bg-brand-700 text-white rounded-lg transition-colors';
-    } else {
-      btnSettingsConfirm.textContent = action === 'publish' ? '发表' : '保存为草稿';
-      btnSettingsConfirm.className =
-        action === 'publish'
-          ? 'px-4 py-2 text-sm font-medium bg-brand-600 hover:bg-brand-700 text-white rounded-lg transition-colors'
-          : 'px-4 py-2 text-sm font-medium text-slate-600 dark:text-slate-300 border border-slate-300 dark:border-slate-600 hover:bg-slate-50 dark:hover:bg-slate-800 rounded-lg transition-colors';
-    }
-    settingsModal.classList.remove('hidden');
-    settingsModal.classList.add('flex');
-    requestAnimationFrame(() => {
-      settingsContent.classList.remove('scale-95', 'opacity-0');
-      settingsContent.classList.add('scale-100', 'opacity-100');
-    });
-  }
-  function closeSettingsModal() {
-    settingsContent.classList.remove('scale-100', 'opacity-100');
-    settingsContent.classList.add('scale-95', 'opacity-0');
-    setTimeout(() => {
-      settingsModal.classList.add('hidden');
-      settingsModal.classList.remove('flex');
-    }, 200);
   }
 
   // ---------- 草稿 ----------
@@ -250,13 +239,16 @@ export function initEditor({ router, refreshPosts }) {
     fieldDescription.value = d.description || '';
     fieldFeatured.checked = d.featured === true;
     contentEl.value = d.content || '';
+    updateDescCount();
+    updateCardPreview();
+    autoGrow();
   }
 
   // ---------- 打开 / 关闭（由路由调用） ----------
   function showModal() {
-    closeSettingsModal();
     modal.classList.remove('hidden');
     document.body.style.overflow = 'hidden';
+    requestAnimationFrame(() => { autoGrow(); alignAside(); });
   }
 
   function openNew() {
@@ -272,7 +264,7 @@ export function initEditor({ router, refreshPosts }) {
     store.hasUnsavedChanges = false;
     updateDraftIndicator();
     showModal();
-    updatePreview();
+    updateCardPreview();
     updateWordCount();
     setTimeout(() => fieldTitle.focus(), 100);
 
@@ -300,7 +292,6 @@ export function initEditor({ router, refreshPosts }) {
     });
     store.slugManuallyEdited = true;
     showModal();
-    previewEl.innerHTML = '<div class="text-center text-slate-400 py-12 text-sm">加载中...</div>';
     updateWordCount();
 
     try {
@@ -321,7 +312,7 @@ export function initEditor({ router, refreshPosts }) {
       clearDraft();
       store.hasUnsavedChanges = false;
       updateDraftIndicator();
-      updatePreview();
+      updateCardPreview();
       updateWordCount();
     } catch (e) {
       if (session !== openSession) return;
@@ -342,16 +333,12 @@ export function initEditor({ router, refreshPosts }) {
     }
     store.hasUnsavedChanges = true;
     updateDraftIndicator();
-    updatePreview();
+    updateCardPreview();
     updateWordCount();
   }
 
   /** 用户主动关闭：校验未保存改动后交给路由 */
   function requestClose() {
-    if (!settingsModal.classList.contains('hidden')) {
-      closeSettingsModal();
-      return;
-    }
     if (store.hasUnsavedChanges && !confirm('有未保存的更改，确定要关闭吗？')) return;
     router.exitEditor();
   }
@@ -360,7 +347,6 @@ export function initEditor({ router, refreshPosts }) {
   function hide() {
     clearTimeout(draftTimer);
     resetOutline();
-    closeSettingsModal();
     modal.classList.add('hidden');
     document.body.style.overflow = '';
   }
@@ -485,44 +471,105 @@ export function initEditor({ router, refreshPosts }) {
   // ---------- 事件绑定 ----------
   document.getElementById('btn-editor-back').addEventListener('click', requestClose);
   document.getElementById('btn-close-editor').addEventListener('click', requestClose);
-  btnSaveDraft.addEventListener('click', () => openSettingsModal('draft'));
+  // 底部固定操作栏：保存草稿 / 发表 直接执行，预览在新标签页打开
+  btnSaveDraft.addEventListener('click', () => saveArticle(false));
+  btnSavePublish.addEventListener('click', () => saveArticle({ publish: true }));
 
-  // 发表：直接触发
-  btnSavePublish.addEventListener('click', () => {
-    saveArticle({ publish: true });
-  });
-
-  document.getElementById('btn-editor-settings').addEventListener('click', () => openSettingsModal('settings'));
   document.getElementById('btn-preview').addEventListener('click', previewArticle);
+  // ---------- 卡片 hover 缩略图预览（iframe 缩放浮层） ----------
+  let hoverPanel = null;
+  let hoverLeaveTimer = null;
+
+  function destroyHoverPanel() {
+    if (hoverPanel) { hoverPanel.remove(); hoverPanel = null; }
+  }
+
+  function showHoverPreview() {
+    clearTimeout(hoverLeaveTimer);
+    const data = {
+      title: fieldTitle.value.trim(),
+      category: fieldCategory.value,
+      description: fieldDescription.value.trim(),
+      featured: fieldFeatured.checked,
+      content: contentEl.value,
+      pubDate: new Date().toISOString().split('T')[0],
+      slug: store.editingSlug || null,
+    };
+    sessionStorage.setItem(PREVIEW_STORAGE_KEY, JSON.stringify(data));
+    const card = document.getElementById('preview-card-hover');
+    if (!card) return;
+    const rect = card.getBoundingClientRect();
+    destroyHoverPanel();
+
+    const W = 320, H = 420;
+    let left = rect.right + 16;
+    if (left + W > window.innerWidth - 16) left = rect.left - W - 16;
+
+    hoverPanel = document.createElement('div');
+    hoverPanel.style.cssText = [
+      'position:fixed',
+      'left:' + left + 'px',
+      'top:' + Math.max(rect.top, 16) + 'px',
+      'width:' + W + 'px',
+      'height:' + H + 'px',
+      'border-radius:12px',
+      'overflow:hidden',
+      'box-shadow:0 12px 40px rgba(0,0,0,0.25)',
+      'z-index:200',
+      'opacity:0',
+      'transition:opacity 0.25s ease',
+      'border:1px solid rgba(0,0,0,0.1)',
+      'background:#fff',
+    ].join(';');
+
+    const iframe = document.createElement('iframe');
+    iframe.src = '/admin/preview';
+    iframe.style.cssText = 'width:800px;height:1050px;border:0;transform:scale(0.4);transform-origin:top left;pointer-events:none;';
+    iframe.onload = () => { if (hoverPanel) hoverPanel.style.opacity = '1'; };
+    hoverPanel.appendChild(iframe);
+    hoverPanel.addEventListener('mouseleave', () => {
+      hoverLeaveTimer = setTimeout(destroyHoverPanel, 200);
+    });
+    document.body.appendChild(hoverPanel);
+  }
+
+  const hoverCard = document.getElementById('preview-card-hover');
+  if (hoverCard) {
+    hoverCard.addEventListener('mouseenter', showHoverPreview);
+    hoverCard.addEventListener('mouseleave', () => {
+      hoverLeaveTimer = setTimeout(destroyHoverPanel, 200);
+    });
+  }
   outlineBtn.addEventListener('click', toggleOutline);
 
-  document.getElementById('btn-close-settings').addEventListener('click', closeSettingsModal);
-  document.getElementById('btn-settings-cancel').addEventListener('click', closeSettingsModal);
-  settingsOverlay.addEventListener('click', closeSettingsModal);
-  btnSettingsConfirm.addEventListener('click', () => {
-    closeSettingsModal();
-    if (settingsAction === 'settings') return; // 仅设置模式：只关闭，不保存
-    saveArticle(settingsAction === 'publish');
-  });
-
-  // 内容 / 字段变化：预览、字数、草稿
+  // 内容 / 字段变化：字数、草稿、卡片预览、正文自适应高度
   contentEl.addEventListener('input', () => {
-    updatePreview();
     updateWordCount();
+    autoGrow();
     scheduleDraftSave();
   });
-  ['field-title', 'field-slug', 'field-description'].forEach((id) => {
-    document.getElementById(id).addEventListener('input', scheduleDraftSave);
+  fieldSlug.addEventListener('input', scheduleDraftSave);
+  fieldDescription.addEventListener('input', () => {
+    updateDescCount();
+    updateCardPreview();
+    scheduleDraftSave();
   });
-  ['field-category', 'field-featured'].forEach((id) => {
-    document.getElementById(id).addEventListener('change', scheduleDraftSave);
+  fieldCategory.addEventListener('change', () => {
+    updateCardPreview();
+    scheduleDraftSave();
+  });
+  fieldFeatured.addEventListener('change', () => {
+    updateCardPreview();
+    scheduleDraftSave();
   });
 
-  // 标题 → slug 自动生成
+  // 标题 → slug 自动生成 + 卡片预览
   fieldTitle.addEventListener('input', (e) => {
     if (!store.slugManuallyEdited) {
       fieldSlug.value = generateSlug(e.target.value);
     }
+    updateCardPreview();
+    scheduleDraftSave();
   });
   fieldSlug.addEventListener('input', () => {
     store.slugManuallyEdited = true;
@@ -541,50 +588,6 @@ export function initEditor({ router, refreshPosts }) {
       saveArticle(false);
     }
   });
-
-  // 滚动同步
-  let isSyncScrolling = false;
-  let scrollTimer = null;
-  function syncScroll(source, target) {
-    if (isSyncScrolling) return;
-    clearTimeout(scrollTimer);
-    scrollTimer = setTimeout(() => {
-      isSyncScrolling = true;
-      const ratio = source.scrollTop / (source.scrollHeight - source.clientHeight || 1);
-      target.scrollTop = ratio * (target.scrollHeight - target.clientHeight);
-      setTimeout(() => { isSyncScrolling = false; }, 50);
-    }, 10);
-  }
-  contentEl.addEventListener('scroll', () => syncScroll(contentEl, previewEl));
-  previewEl.addEventListener('scroll', () => syncScroll(previewEl, contentEl));
-
-  // 拖拽调整分栏宽度
-  const resizer = document.getElementById('editor-resizer');
-  const editorPane = document.getElementById('editor-pane');
-  const splitContainer = document.getElementById('editor-split-container');
-  let isResizing = false;
-  if (resizer) {
-    resizer.addEventListener('mousedown', (e) => {
-      isResizing = true;
-      document.body.style.cursor = 'col-resize';
-      document.body.style.userSelect = 'none';
-      e.preventDefault();
-    });
-    document.addEventListener('mousemove', (e) => {
-      if (!isResizing) return;
-      const rect = splitContainer.getBoundingClientRect();
-      let percent = ((e.clientX - rect.left) / rect.width) * 100;
-      percent = Math.max(20, Math.min(80, percent));
-      editorPane.style.flex = `0 0 ${percent}%`;
-    });
-    document.addEventListener('mouseup', () => {
-      if (isResizing) {
-        isResizing = false;
-        document.body.style.cursor = '';
-        document.body.style.userSelect = '';
-      }
-    });
-  }
 
   // 图片拖拽上传
   contentEl.addEventListener('dragover', (e) => {
@@ -619,6 +622,9 @@ export function initEditor({ router, refreshPosts }) {
       }
     }
   });
+
+  // 窗口尺寸变化时重算正文高度与左栏对齐
+  window.addEventListener('resize', () => { autoGrow(); alignAside(); });
 
   return { openNew, openEdit, hide };
 }

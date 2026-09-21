@@ -109,7 +109,7 @@
 
   /* 代码块优化 */
   .prose pre {
-    @apply rounded-xl border border-slate-700 shadow-lg relative overflow-hidden;
+    @apply rounded-xl border border-slate-200 shadow-md relative overflow-hidden dark:border-slate-700 dark:shadow-lg;
   }
 
   .prose code {
@@ -122,12 +122,13 @@
 
   /* 代码块语言标识 */
   .code-lang {
-    @apply absolute top-0 left-0 px-3 py-1 text-[10px] font-mono font-semibold text-slate-400 bg-slate-800/80 rounded-br-lg uppercase tracking-wider;
+    @apply absolute top-0 left-0 px-3 py-1 text-[10px] font-mono font-semibold text-slate-500 rounded-br-lg uppercase tracking-wider dark:text-slate-400;
+    background: transparent;
   }
 
   /* 代码块复制按钮 */
   .copy-btn {
-    @apply absolute top-2 right-2 p-1.5 rounded-md text-slate-400 hover:text-white bg-slate-700/50 hover:bg-slate-600/70 transition-all opacity-0 group-hover:opacity-100 focus:opacity-100 cursor-pointer border-0;
+    @apply absolute top-2 right-2 p-1.5 rounded-md text-slate-400 hover:text-slate-600 bg-slate-200/70 hover:bg-slate-300/70 transition-all opacity-0 group-hover:opacity-100 focus:opacity-100 cursor-pointer border-0 dark:text-slate-400 dark:hover:text-white dark:bg-slate-700/50 dark:hover:bg-slate-600/70;
   }
 
   .prose pre:hover .copy-btn {
@@ -135,7 +136,7 @@
   }
 
   .copy-btn.copied {
-    @apply text-emerald-400 bg-emerald-900/50;
+    @apply text-emerald-600 bg-emerald-100 dark:text-emerald-400 dark:bg-emerald-900/50;
   }
 
   /* 代码块行号 */
@@ -144,7 +145,21 @@
   }
 
   .code-line-numbers {
-    @apply flex flex-col text-right pr-3 pl-4 py-4 text-xs font-mono text-slate-500 select-none border-r border-slate-700/50 bg-slate-800/30 flex-shrink-0;
+    @apply flex flex-col text-right pr-3 pl-4 py-4 text-xs font-mono select-none border-r flex-shrink-0;
+    background: transparent;
+    border-color: rgba(0, 0, 0, 0.08);
+    color: #7c7f93;
+  }
+  html.dark .code-line-numbers {
+    border-color: rgba(255, 255, 255, 0.08);
+    color: #565f89;
+  }
+
+  /* shiki 双主题：暗色下切换 dark 配色（light 内联写死，dark 走 CSS 变量） */
+  html.dark .astro-code,
+  html.dark .astro-code span {
+    background-color: var(--shiki-dark-bg) !important;
+    color: var(--shiki-dark) !important;
   }
 
   .code-line-numbers span {

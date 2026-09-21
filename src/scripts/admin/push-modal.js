@@ -112,7 +112,10 @@ function render() {
   const el = state.el;
 
   const pct = state.total ? Math.round((state.done / state.total) * 100) : 0;
-  el.querySelector('[data-push-progress]').style.width = `${pct}%`;
+  const bar = el.querySelector('[data-push-progress]');
+  bar.style.width = `${pct}%`;
+  bar.classList.toggle('bg-emerald-500', !state.running && state.failCount === 0);
+  bar.classList.toggle('bg-rose-500', !state.running && state.failCount > 0);
 
   const finished = !state.running && state.total > 0;
   const allOk = finished && state.failCount === 0;
@@ -230,6 +233,7 @@ async function streamPush(slugs) {
       if (it.status === 'pending' || it.status === 'running') {
         it.status = 'fail';
         it.error = e.message;
+        state.failCount++;
       }
     }
     state.done = state.total;
